@@ -28,7 +28,7 @@ def getname(user_id,vk_session):
             db=open("vk_users.db","a")
             db.write(str(user_id)+":"+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
             db.close()
-            
+
             return " ".join([name[0]['first_name'],name[0]['last_name']])
 
 
@@ -58,7 +58,7 @@ def main():
     for x in reversed(msgs['items']):
         #checking if it is needed message
         if 'chat_id' in x.keys() and x['chat_id']==chatid:
-            histmsg.write(str(x['id'])+' '+getname(x['user_id'],vk_session)+"  "+
+            histmsg.write('@ '+str(x['id'])+' '+getname(x['user_id'],vk_session)+"  "+
             datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' : '+x['body'])
             #writing forwarded messages
             if 'fwd_messages' in x.keys():
