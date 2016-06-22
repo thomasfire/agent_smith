@@ -2,7 +2,8 @@
 
 #this is bot "Agent Smith beta". He chats in vk with other people
 
-#TODO лог обработанных сообщений,ответ на сообщения
+#TODO лог обработанных сообщений,ответ на сообщения,пересылка сообщений из лога телеграма
+
 
 import vk_api
 import re
@@ -29,13 +30,13 @@ def sendinfo(vk_session,chatid,num):
 
 
 def main(vk_session,chatid):
-    f=open('msgshistory.db','r')
+    f=open('files/msgshistory.db','r')
     msgs=f.read().split(';\n@')[-10:]
     f.close()
     nmsg=[]
     for x in msgs:
         nmsg.append(x.split(' : '))
-    f=open('msgs.made','r')
+    f=open('files/msgs.made','r')
     sent=f.read()
     f.close()
     for x in nmsg:
@@ -55,7 +56,7 @@ def main(vk_session,chatid):
 
 if __name__ == '__main__':
     #auth
-    vset=open("vk.settings","r")
+    vset=open("files/vk.settings","r")
     settings=vset.read()
     vset.close()
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
@@ -64,5 +65,3 @@ if __name__ == '__main__':
     vk_session = vk_api.VkApi(login, password)
 
     main(vk_session,chatid)
-
-    main()

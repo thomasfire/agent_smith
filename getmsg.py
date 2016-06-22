@@ -7,7 +7,7 @@ import datetime
 import re
 
 def getname(user_id,vk_session):
-        db=open("vk_users.db","r")
+        db=open("files/vk_users.db","r")
         users=db.read()
 
         #checking if there are information about this user in database
@@ -22,7 +22,7 @@ def getname(user_id,vk_session):
             vk = vk_session.get_api()
             name=vk.users.get(user_ids=user_id)
             #saving info of this id to the file for the fast working next time
-            db=open("vk_users.db","a")
+            db=open("files/vk_users.db","a")
             db.write(str(user_id)+":"+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
             db.close()
 
@@ -42,10 +42,10 @@ def main(vk_session,chatid):
     tools = vk_api.VkTools(vk_session)
     msgs = tools.get_all('messages.get',1,values={'count': 100, 'chat_id': chatid},limit=1)
 
-    histmsg=open('msgshistory.db','r')
+    histmsg=open('files/msgshistory.db','r')
     msglog=histmsg.read()
     histmsg.close()
-    histmsg=open('msgshistory.db','a')
+    histmsg=open('files/msgshistory.db','a')
 
     #writing the messages to the file
     for x in reversed(msgs['items'][:99]):
@@ -93,7 +93,7 @@ def main(vk_session,chatid):
 
 if __name__ == '__main__':
     #auth
-    vset=open("vk.settings","r")
+    vset=open("files/vk.settings","r")
     settings=vset.read()
     vset.close()
     login="".join(re.findall(r"login=(.+)#endlogin",settings))

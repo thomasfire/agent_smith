@@ -6,8 +6,8 @@
 
 
 def main():
-    histmsg=open('msgshistory.db','r')
-    f=open('keywords.db','r')
+    histmsg=open('files/msgshistory.db','r')
+    f=open('files/keywords.db','r')
     keywords=f.read().split()
     listofmsgs=histmsg.read().split(';\n@')
     histmsg.close()
@@ -18,10 +18,10 @@ def main():
     for x in range(len(listofmsgs)):
         listofmsgs[x]=listofmsgs[x].strip('@ ').strip(';')
 
-    f=open('msgs.sent','r')
+    f=open('files/msgs.sent','r')
     sent=f.read()
     f.close
-    f=open('msgs.seq','w')
+    f=open('files/msgs.seq','w')
 
     for x in listofmsgs:
         msg=x.split(' : ')
@@ -35,7 +35,7 @@ def main():
     f.close()
 
     if len(listofmsgs)>1000:
-        f=open('msgshistory.db','w')
+        f=open('files/msgshistory.db','w')
         f.write('@ '+' ;\n@ '.join(listofmsgs[-100:]))
         f.close()
 
