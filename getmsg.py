@@ -52,12 +52,16 @@ def main():
 
     tools = vk_api.VkTools(vk_session)
     msgs = tools.get_all('messages.get',1,values={'count': 1, 'chat_id': chatid},limit=1)
+
+    histmsg=open('msgshistory.db','r')
+    msglog=histmsg.read()
+    histmsg.close()
     histmsg=open('msgshistory.db','a')
 
     #writing the messages to the file
     for x in reversed(msgs['items']):
         #checking if it is needed message
-        if 'chat_id' in x.keys() and x['chat_id']==chatid:
+        if 'chat_id' in x.keys() and x['chat_id']==chatid and str(x['id']) not in msglog:
             histmsg.write('@ '+str(x['id'])+' '+getname(x['user_id'],vk_session)+"  "+
             datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' : '+x['body'])
             #writing forwarded messages
