@@ -1,4 +1,4 @@
 /vk_config.json
 *.pyc
-vk.settings
 vk_users.db
+vk.settings
