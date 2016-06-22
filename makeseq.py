@@ -32,7 +32,12 @@ def main():
                     impnt.append(msg[0].strip())
                     break
     f.write("important:{"+" ".join(impnt)+"}\n\n" +"all:{"+" ".join(allmsg)+"}")
+    f.close()
 
+    if len(listofmsgs)>1000:
+        f=open('msgshistory.db','w')
+        f.write('@ '+' ;\n@ '.join(listofmsgs[-100:]))
+        f.close()
 
 if __name__ == '__main__':
     main()
