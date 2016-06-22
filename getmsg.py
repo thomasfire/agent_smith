@@ -3,11 +3,8 @@
 #gets and writes messages
 
 import vk_api
-import os
-import shutil
-import sys
-import re
 import datetime
+import re
 
 def getname(user_id,vk_session):
         db=open("vk_users.db","r")
@@ -32,15 +29,7 @@ def getname(user_id,vk_session):
             return " ".join([name[0]['first_name'],name[0]['last_name']])
 
 
-def main():
-    vset=open("vk.settings","r")
-    settings=vset.read()
-    vset.close()
-    login="".join(re.findall(r"login=(.+)#endlogin",settings))
-    password="".join(re.findall(r"password=(.+)#endpass",settings))
-    chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
-
-    vk_session = vk_api.VkApi(login, password)
+def main(vk_session,chatid):
 
     #authorization and getting needable tools
 
@@ -103,4 +92,13 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #auth
+    vset=open("vk.settings","r")
+    settings=vset.read()
+    vset.close()
+    login="".join(re.findall(r"login=(.+)#endlogin",settings))
+    password="".join(re.findall(r"password=(.+)#endpass",settings))
+    chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
+    vk_session = vk_api.VkApi(login, password)
+
+    main(vk_session,chatid)
