@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 
 #gets and writes messages
+""" Developer and Author: Thomas Fire https://github.com/thomasfire
+### Main manager: Uliy Bee
+"""
 
 import vk_api
 import datetime
@@ -27,6 +30,7 @@ def getname(user_id,vk_session):
             db.close()
 
             return " ".join([name[0]['first_name'],name[0]['last_name']])
+
 
 def markasread(vk_session,msgid):
     vk = vk_session.get_api()
@@ -85,11 +89,8 @@ def cleanup(msgs):
 
 
 
-
 def main(vk_session,chatid):
-
     #authorization and getting needable tools
-
     try:
         vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
@@ -102,9 +103,6 @@ def main(vk_session,chatid):
     msgid=cleanup(msgs)
     if msgid:
         markasread(vk_session,msgid)
-
-
-
 
 
 
