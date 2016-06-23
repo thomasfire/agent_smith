@@ -2,7 +2,9 @@
 
 #sorts and makes sequance
 #also cleans up msgshistory.db
-
+""" Developer and Author: Thomas Fire https://github.com/thomasfire
+### Main manager: Uliy Bee
+"""
 
 
 def main():
@@ -25,6 +27,12 @@ def main():
 
     for x in listofmsgs:
         msg=x.split(' : ')
+        mess=True
+        for y in ['/quote','/audio','/gif','/info','/pic']:
+            if y in msg[2]:
+                mess=False
+                break
+        if not mess: continue
         if msg[0].strip() not in sent:
             allmsg.append(msg[0].strip())
             for y in keywords:
