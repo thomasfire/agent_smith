@@ -28,26 +28,18 @@ def getname(user_id,vk_session):
 
             return " ".join([name[0]['first_name'],name[0]['last_name']])
 
+def markasread(vk_session,msgid):
+    vk = vk_session.get_api()
+    vk.messages.markAsRead(message_ids=msgid,start_message_id=msgid)
 
-def main(vk_session,chatid):
-
-    #authorization and getting needable tools
-
-    try:
-        vk_session.authorization()
-    except vk_api.AuthorizationError as error_msg:
-        print(error_msg)
-        return
-
-    tools = vk_api.VkTools(vk_session)
-    msgs = tools.get_all('messages.get',1,values={'count': 100, 'chat_id': chatid},limit=1)
-
+#cleans from extra info and writes into the file. Returns id of last message
+def cleanup(msgs):
     histmsg=open('files/msgshistory.db','r')
     msglog=histmsg.read()
     histmsg.close()
     histmsg=open('files/msgshistory.db','a')
-
     #writing the messages to the file
+    msgid=0
     for x in reversed(msgs['items'][:99]):
         #checking if it is needed message
         if 'chat_id' in x.keys() and x['chat_id']==chatid and str(x['id']) not in msglog:
@@ -87,8 +79,33 @@ def main(vk_session,chatid):
                     datetime.datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
                     " : "+y['body'])
 
-
             histmsg.write(';\n')
+            msgid=x['id']
+    return msgid
+
+
+
+
+def main(vk_session,chatid):
+
+    #authorization and getting needable tools
+
+    try:
+        vk_session.authorization()
+    except vk_api.AuthorizationError as error_msg:
+        print(error_msg)
+        return
+
+    tools = vk_api.VkTools(vk_session)
+    msgs = tools.get_all_slow('messages.get',1,values={'count': 100, 'chat_id': chatid},limit=100)
+    #writing to the file and marking as read
+    msgid=cleanup(msgs)
+    if msgid:
+        markasread(vk_session,msgid)
+
+
+
+
 
 
 if __name__ == '__main__':
