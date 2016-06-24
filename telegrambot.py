@@ -16,7 +16,8 @@ import json
 
 
 #https://api.telegram.org/bot<token>/METHOD_NAME
-#TODO пересылка сообщений из вк в телеграм,пересылка из телеграма в вк,предоставлять лог последних n сообщений
+#TODO пересылка сообщений из вк в телеграм,пересылка из телеграма в вк,предоставлять лог последних n сообщений из вк
+#TODO 2: добавить возможность пересылки цитатки с помощью /quote; реализовать обработку /help и /msg
 
 #url of api Telegram
 g=open('files/telegram.token')
@@ -58,9 +59,9 @@ def getmsg():
         f=open('files/tl_msgs.db','a')
         #logging to file
         for x in requ['result']:
-
+            #checking if it allowed command
             if (('@ msg_id='+str(x['message']['message_id']) not in msglist and
-            (not x['message']['text'][0]=='/' or x['message']['text'][0:4]=='/msg'
+            (x['message']['text'][0:4]=='/msg' or x['message']['text'][0:6]=='/quote'
             or x['message']['text'][0:5]=='/mode' or x['message']['text'][0:7]=='/chname'
             or x['message']['text'][0:5]=='/help' or x['message']['text'][0:5]=='/auth' ))
             and ';\n@' not in x['message']['text']):
@@ -90,17 +91,15 @@ def updateusers():
         if x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:7]=='/chname':
             f=open('files/tl_users.db','r')
             users=f.read().strip('@ ').strip(' ;\n').split(' ;\n@ ')
-        #    print(users)
             newusers=[]
             f.close()
+            #getting new nickname and writing it to log
             for y in users:
                 if x.split(' :: ')[1].strip()==y.split(' :: ')[0].strip():
                     newusers.append('  :: '.join([x.split(' :: ')[1],x.split(' :: ')[3][8:].strip().strip(' ;'),y.split(' :: ')[2]]))
-                    #print(newusers[-1])
-                    sendmsg(y.split(' :: ')[0],"The nicname has been changed")
+                    sendmsg(y.split(' :: ')[0],"The nickname has been changed")
                 else:
                     newusers.append(y)
-                    #print(newusers[-1])
 
             f=open('files/tl_users.db','w')
             f.write('@ '+' ;\n@ '.join(newusers)+' ;')
@@ -116,6 +115,7 @@ def updateusers():
             f=open('files/tl_users.db','r')
             users=f.read()
             f.close()
+
             f=open('files/tl_users.db','a')
             if x.split(' :: ')[3][6:71].strip() in tokens and x.split(' :: ')[1] not in users:
                 f.write('@ '+x.split(' :: ')[1]+' :: '+'Anonymous'+x.split(' :: ')[1]+' :: '+'all ;\n')
@@ -126,13 +126,33 @@ def updateusers():
                 g.write('\n'.join(tokens).replace(x.split(' :: ')[3][6:71].strip()+'\n',''))
                 g.close()
             else:
-                sendmsg(x.split(' :: ')[1],'This token is wrong.')
+                sendmsg(x.split(' :: ')[1],'This token is wrong or you are already logged in. You can change your nick via /chname <new_nick> if you are authenticated.')
             f.close()
             f=open('files/tl_msgs.made','a')
             f.write(' '+x.split(' :: ')[0])
             f.close()
 
+        elif x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:5]=='/mode':
+            f=open('files/tl_users.db','r')
+            users=f.read().strip('@ ').strip(' ;\n').split(' ;\n@ ')
+            newusers=[]
+            f.close()
 
+            for y in users: #checking if it needable user and if command is correct
+                if (x.split(' :: ')[1].strip()==y.split(' :: ')[0].strip() and
+                x.split(' :: ')[3][6:].strip().strip(' ;') in ['all','no','imnt']):
+                    newusers.append('  :: '.join([x.split(' :: ')[1],y.split(' :: ')[0].strip(),
+                    x.split(' :: ')[3][6:].strip().strip(' ;')]))
+                    sendmsg(y.split(' :: ')[0],"The mode has been changed")
+                else:
+                    newusers.append(y)
+            #writing to file and logging the id of the message
+            f=open('files/tl_users.db','w')
+            f.write('@ '+' ;\n@ '.join(newusers)+' ;')
+            f.close()
+            f=open('files/tl_msgs.made','a')
+            f.write(' '+x.split(' :: ')[0])
+            f.close()
 
 
 
