@@ -46,7 +46,7 @@ def cleanup(msgs):
     msgid=0
     for x in reversed(msgs['items'][:99]):
         #checking if it is needed message
-        if 'chat_id' in x.keys() and x['chat_id']==chatid and str(x['id']) not in msglog:
+        if 'chat_id' in x.keys() and x['chat_id']==chatid and str(x['id']) not in msglog and not ';\n@' in x['body']:
             histmsg.write('@ '+str(x['id'])+' : '+getname(x['user_id'],vk_session)+"  "+
             datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' : '+x['body'])
             #writing action
@@ -97,12 +97,19 @@ def main(vk_session,chatid):
         print(error_msg)
         return
 
-    tools = vk_api.VkTools(vk_session)
-    msgs = tools.get_all_slow('messages.get',1,values={'count': 100, 'chat_id': chatid},limit=100)
+    try:
+        tools = vk_api.VkTools(vk_session)
+        msgs = tools.get_all_slow('messages.get',1,values={'count': 100, 'chat_id': chatid},limit=100)
     #writing to the file and marking as read
-    msgid=cleanup(msgs)
+        msgid=cleanup(msgs)
+    except:
+        print('smth goes wrong at getting messages;')
+
     if msgid:
-        markasread(vk_session,msgid)
+        try:
+            markasread(vk_session,msgid)
+        except:
+            print('smth goes wrong at marking as read')
 
 
 
@@ -114,6 +121,9 @@ if __name__ == '__main__':
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
-    vk_session = vk_api.VkApi(login, password)
+    try:
+        vk_session = vk_api.VkApi(login, password)
+    except:
+        print('smth goes wrong at getting vk_session')
 
     main(vk_session,chatid)

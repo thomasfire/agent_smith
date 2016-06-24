@@ -36,11 +36,17 @@ def main(vk_session,album_id,user_id):
         except vk_api.AuthorizationError as error_msg:
             print(error_msg)
             return
-        vk = vk_session.get_api()
+        try:
+            vk = vk_session.get_api()
+        except Exception as e:
+            print('smth goes wrong at getting vk api\n',e)
         mediafile=open('files/media.db','w')
-        updateaudio(vk,mediafile)
-        updatepics(vk,mediafile,album_id,user_id)
-        updategifs(vk,mediafile)
+        try:
+            updateaudio(vk,mediafile)
+            updatepics(vk,mediafile,album_id,user_id)
+            updategifs(vk,mediafile)
+        except Exception as e:
+            print("smth goes wrong at updating media: \n",e)
         mediafile.close()
 
 if __name__ == '__main__':
@@ -53,6 +59,9 @@ if __name__ == '__main__':
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
     albumid=int("".join(re.findall(r"album_id=(\d+)#endalbumid",settings)))
     userid=int("".join(re.findall(r"userid=(\d+)#enduserid",settings)))
-    vk_session = vk_api.VkApi(login, password)
+    try:
+        vk_session = vk_api.VkApi(login, password)
+    except Exception as e:
+        print('smth goes wrong at getting vk_session\n',e)
 
     main(vk_session,albumid,userid)

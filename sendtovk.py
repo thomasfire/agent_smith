@@ -16,50 +16,67 @@ def sendcit(vk,chatid,num):
     f=open('files/citations.db','r')
     msg=random.choice(f.read().split('\n\n'))
     f.close()
-    vk.messages.send(chat_id=chatid,message=msg)
-    f=open('files/msgs.made','a')
-    f.write(' '+str(num))
-    f.close()
+    try:
+        vk.messages.send(chat_id=chatid,message=msg)
+        f=open('files/msgs.made','a')
+        f.write(' '+str(num))
+        f.close()
+    except Exception as e:
+        print('smth goes wrong at sending citation to vk:\n',e)
 
 def sendpic(vk,chatid,num):
     f=open('files/media.db')
     pic='photo'+random.choice(f.read().split('\n\n')[1].split()[1:-1])
     f.close()
-    vk.messages.send(chat_id=chatid,attachment=pic)
-    f=open('files/msgs.made','a')
-    f.write(' '+str(num))
-    f.close()
+    try:
+        vk.messages.send(chat_id=chatid,attachment=pic)
+        f=open('files/msgs.made','a')
+        f.write(' '+str(num))
+        f.close()
+    except Exception as e:
+        print('smth goes wrong at sending picture:\n',e)
 
 def sendaudio(vk,chatid,num):
     f=open('files/media.db')
     aud='audio'+random.choice(f.read().split('\n\n')[0].split()[1:-1])
     f.close()
-    vk.messages.send(chat_id=chatid,attachment=aud)
-    f=open('files/msgs.made','a')
-    f.write(' '+str(num))
-    f.close()
+    try:
+        vk.messages.send(chat_id=chatid,attachment=aud)
+        f=open('files/msgs.made','a')
+        f.write(' '+str(num))
+        f.close()
+        except Exception as e:
+            print('smth goes wrong at sending audio:\n',e)
 
 def sendgif(vk,chatid,num):
     f=open('files/media.db')
     gif='doc'+random.choice(f.read().split('\n\n')[2].split()[1:-1])
     f.close()
-    vk.messages.send(chat_id=chatid,attachment=gif)
-    f=open('files/msgs.made','a')
-    f.write(' '+str(num))
-    f.close()
+    try:
+        vk.messages.send(chat_id=chatid,attachment=gif)
+        f=open('files/msgs.made','a')
+        f.write(' '+str(num))
+        f.close()
+    except Exception as e:
+        print('smth goes wrong at sending gif:\n',e)
 
 def sendinfo(vk,chatid,num):
     f=open('files/info.db','r')
     msg=f.read()
     f.close()
-    vk.messages.send(chat_id=chatid,message=msg)
-    f=open('files/msgs.made','a')
-    f.write(' '+str(num))
-    f.close()
+    try:
+        vk.messages.send(chat_id=chatid,message=msg)
+        f=open('files/msgs.made','a')
+        f.write(' '+str(num))
+        f.close()
+    except Exception as e:
+        print('smth goes wrong at sending info:\n',e)
 
 #sends nessages from Telegram to vk
-def sendtl(vk, chatid,msg):
-    pass
+def sendtl(vk, chatid):
+    f=open('files/tl_msgs.db','r')
+    msgs=f.read().split(';\n@')
+    f.close()
 
 
 def main(vk_session,chatid):
@@ -79,7 +96,11 @@ def main(vk_session,chatid):
     except vk_api.AuthorizationError as error_msg:
         print(error_msg)
         return
-    vk = vk_session.get_api()
+
+    try:
+        vk = vk_session.get_api()
+    except Exception as e:
+        print('smth goes wrong at geting api\n',e)
 
     #looking for keywords
     for x in nmsg:
@@ -96,7 +117,7 @@ def main(vk_session,chatid):
         else:
             continue
 
-    sendtl(vk,chatid,x)
+    sendtl(vk,chatid)
 
 
 if __name__ == '__main__':
@@ -107,6 +128,9 @@ if __name__ == '__main__':
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
-    vk_session = vk_api.VkApi(login, password)
+    try:
+        vk_session = vk_api.VkApi(login, password)
+    except Exception as e:
+        print('smth goes wrong at getting vk_session\n',e)
 
     main(vk_session,chatid)
