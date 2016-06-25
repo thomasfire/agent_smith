@@ -11,14 +11,14 @@ def main():
     histmsg=open('files/msgshistory.db','r')
     f=open('files/keywords.db','r')
     keywords=f.read().split()
-    listofmsgs=histmsg.read().split(';\n@')
+    listofmsgs=histmsg.read().split(' ;\n@ ')
     histmsg.close()
     f.close()
     impnt=[]
     allmsg=[]
 
     for x in range(len(listofmsgs)):
-        listofmsgs[x]=listofmsgs[x].strip('@ ').strip(';')
+        listofmsgs[x]=listofmsgs[x].strip('@ ').strip(' ;')
 
     f=open('files/msgs.sent','r')
     sent=f.read()
@@ -26,7 +26,7 @@ def main():
     f=open('files/msgs.seq','w')
 
     for x in listofmsgs:
-        msg=x.split(' : ')
+        msg=x.split(' :: ')
         mess=True
         for y in ['/quote','/audio','/gif','/info','/pic']:
             if y in msg[2]:

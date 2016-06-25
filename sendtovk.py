@@ -85,7 +85,7 @@ def main(vk_session,chatid):
     f.close()
     nmsg=[]
     for x in msgs:
-        nmsg.append(x.split(' : '))
+        nmsg.append(x.split(' :: '))
     f=open('files/msgs.made','r')
     sent=f.read()
     f.close()
