@@ -19,14 +19,14 @@ def getname(user_id,vk_session):
             users=users.split("\n")
             for x in users:
                 if str(user_id) in x:
-                    return x.split(':')[1]
+                    return x.split('::')[1]
         else:
             db.close()
             vk = vk_session.get_api()
             name=vk.users.get(user_ids=user_id)
             #saving info of this id to the file for the fast working next time
             db=open("files/vk_users.db","a")
-            db.write(str(user_id)+":"+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
+            db.write(str(user_id)+" :: "+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
             db.close()
 
             return " ".join([name[0]['first_name'],name[0]['last_name']])
@@ -47,8 +47,8 @@ def cleanup(msgs):
     for x in reversed(msgs['items'][:99]):
         #checking if it is needed message
         if 'chat_id' in x.keys() and x['chat_id']==chatid and str(x['id']) not in msglog and not ';\n@' in x['body']:
-            histmsg.write('@ '+str(x['id'])+' : '+getname(x['user_id'],vk_session)+"  "+
-            datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' : '+x['body'])
+            histmsg.write('@ '+str(x['id'])+' :: '+getname(x['user_id'],vk_session)+" :: "+
+            datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'])
             #writing action
             if 'action' in x.keys():
                 if x['action']=='chat_kick_user':
@@ -79,11 +79,11 @@ def cleanup(msgs):
             #writing forwarded messages
             if 'fwd_messages' in x.keys():
                 for y in x['fwd_messages']:
-                    histmsg.write(" forwarded from "+getname(y['user_id'],vk_session)+" "+
+                    histmsg.write(" forwarded from "+getname(y['user_id'],vk_session)+" :: "+
                     datetime.datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
-                    " : "+y['body'])
+                    " :: "+y['body'])
 
-            histmsg.write(';\n')
+            histmsg.write(' ;\n')
             msgid=x['id']
     return msgid
 
