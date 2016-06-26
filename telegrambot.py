@@ -14,6 +14,7 @@ import datetime
 from urllib.parse import quote, urlsplit, urlunsplit
 import json
 import random
+import re
 
 
 #https://api.telegram.org/bot<token>/METHOD_NAME
@@ -79,6 +80,18 @@ def getmsg():
         print(' A error occured while getting updates in Telegram:\n',e)
         return 'error'
     return requ
+
+
+
+def makedict():
+    f=open('files/msgshistory.db','r')
+    msgs=f.read().split(' ;\n@ ')
+    f.close()
+    ndict={}
+    for x in msgs:
+        ndict[x.split(' :: ')[0].strip()]=' : '.join(x.split(' :: ')[1:]).strip()+' ;'
+    return ndict
+
 
 
 
@@ -208,9 +221,11 @@ def response():
     f=open('files/tl_msgs.db','r')
     msgs=f.read().strip('@ ').strip(' ;').split(' ;\n@ ')
     f.close()
-
+    f=open('files/tl_users.db','r')
+    users=f.read()
+    f.close()
     for x in msgs:
-        if x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:4]=='/log':
+        if '@ '+x.split(' :: ')[1].strip()+'  :: ' in users and x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:4]=='/log':
             f=open("files/msgshistory.db","r")
             messages=f.read().strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
             f.close()
@@ -231,7 +246,7 @@ def response():
             f.write(' '+x.split(' :: ')[0])
             f.close()
 
-        elif x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:6]=='/quote':
+        elif '@ '+x.split(' :: ')[1].strip() in users and x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:6]=='/quote':
             f=open('files/citations.db','r')
             tosend=random.choice(f.read().split('\n\n'))
             f.close()
@@ -258,10 +273,43 @@ def cleanup():
         f.write(' '.join(listofmsgs[-100:]))
         f.close()
 
-
+#sends messages from vk to Telegram
 def fromvktotl():
-    #TODO this
-    pass
+    f=open('files/msgs.seq','r')
+    seq=f.read()
+    f.close()
+    allmsg=''.join(re.findall(r'all:{(.*?)}',seq)).split()
+    imnt=''.join(re.findall(r'important:{(.*?)}',seq)).split()
+    msgdict=makedict()
+
+    toall=[]
+    toimnt=[]
+
+    for x in allmsg:
+        if x in msgdict.keys():
+            toall.append(msgdict[x])
+    toall='\n'.join(toall)
+
+    for x in imnt:
+        if x in msgdict.keys():
+            toimnt.append(msgdict[x])
+    toimnt='\n'.join(toimnt)
+    if toall:
+        f=open('files/tl_users.db','r')
+        users=f.read().strip('@ ').strip(' ;').split(' ;\n@ ')
+        f.close()
+        for x in users:
+            if x.split(' :: ')[2].strip()=='no':
+                continue
+            elif toimnt and x.split(' :: ')[2].strip().strip(' ;')=='imnt':
+                sendmsg(x.split(' :: ')[0].strip(), toimnt)
+            elif x.split(' :: ')[2].strip().strip(' ;')=='all':
+                sendmsg(x.split(' :: ')[0].strip(), toall)
+
+    f=open('files/msgs.sent','a')
+    f.write(' '+' '.join(allmsg))
+    f.close()
+
 
 
 
