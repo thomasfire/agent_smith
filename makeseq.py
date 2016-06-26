@@ -36,7 +36,7 @@ def main():
         if msg[0].strip() not in sent:
             allmsg.append(msg[0].strip())
             for y in keywords:
-                if y in msg[2].lower() or msg[2]==msg[2].upper():
+                if y in msg[3].lower() or msg[3]==msg[3].upper():
                     impnt.append(msg[0].strip())
                     break
     f.write("important:{"+" ".join(impnt)+"}\n\n" +"all:{"+" ".join(allmsg)+"}")
