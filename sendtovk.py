@@ -45,7 +45,7 @@ def sendaudio(vk,chatid,num):
         f=open('files/msgs.made','a')
         f.write(' '+str(num))
         f.close()
-        except Exception as e:
+    except Exception as e:
             print('smth goes wrong at sending audio:\n',e)
 
 def sendgif(vk,chatid,num):
@@ -74,9 +74,18 @@ def sendinfo(vk,chatid,num):
 
 #sends nessages from Telegram to vk
 def sendtl(vk, chatid):
-    f=open('files/tl_msgs.db','r')
-    msgs=f.read().split(';\n@')
-    f.close()
+    try:
+        f=open('files/tl_msgs.seq','r')
+        msgs=f.read().replace('Not_sent_message: ','')
+        f.close()
+        if msgs:
+            vk.messages.send(chat_id=chatid,message=msgs)
+        f=open('files/tl_msgs.seq','w')
+        f.write('')
+        f.close()
+    except Exception as e:
+        print('smth goes wrong at sending messages from Telegram:\n',e)
+
 
 
 def main(vk_session,chatid):
@@ -130,7 +139,6 @@ if __name__ == '__main__':
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
     try:
         vk_session = vk_api.VkApi(login, password)
+        main(vk_session,chatid)
     except Exception as e:
         print('smth goes wrong at getting vk_session\n',e)
-
-    main(vk_session,chatid)
