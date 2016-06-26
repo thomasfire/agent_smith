@@ -214,7 +214,23 @@ def makeseq():
 
 #checks for /log or /help or /quote and responses to user
 def response():
-    helpmsg="""This is lazy help message."""
+    helpmsg="""I`m Agent Smith (beta0.0 June 27 2016). I`m builded with elastic methods, ad-hoc solvings
+     and nonstop integration. Beta is unstable, something can work incorrect or do not work. Please report @Thomas_Fire if you
+     find a bug. I can execute some commands and send messages from VK to this chat and back. So you can do not open
+     VK without worrying miss something imortant. But you need allowance of the @Thomas_Fire to use this bot. He will send you
+     an token to log in and use all features. So you need first /auth <token> to log in and start receiving messages.\n
+     There are commands I can do:\n
+     /auth <token> - log in via <token> you have,after you log in you will be receiving all messages and your nick will
+      be Anonymous<some numbers>, but you can change mode or nick;\n
+     /help - view this message;\n
+     /me - information about you: your nickname and mode of receiving messages;\n
+     /log <N> - where <N> is integer number. You will receive N latest messages from VK;\n
+     /msg <message_text> - sends <your_nick>:<message_text> to VK;\n
+     /chname <new_nick> - changes <your_nick> to <new_nick>;\n
+     /mode <new_mode> - changes <your_mode> to <new_mode>. Must be all for receiving all messages from VK, imnt
+     for receiving important messages and no for receiving no messages;\n
+     /quote - sends my random citation from The Matrix;"""
+     
     f=open('files/tl_msgs.made','r')
     maden=f.read()
     f.close()
@@ -233,8 +249,11 @@ def response():
 
             for y in messages:
                 newmsg.append(' : '.join(y.split(' : ')[1:]).strip(' ;'))
-
-            tosend='\n'.join(newmsg[-int(x.split(' :: ')[3][5:].strip().strip(' ;')):])
+            try:
+                tosend='\n'.join(newmsg[-int(x.split(' :: ')[3][5:].strip().strip(' ;')):])
+            except Exception as e:
+                print('Error in making message')
+                tosend='You typed incorrect value. Maybe you requested more messages I have, or you typed non integer number.'
             sendmsg(x.split(' :: ')[1].strip(), tosend)
             f=open('files/tl_msgs.made','a')
             f.write(' '+x.split(' :: ')[0])
