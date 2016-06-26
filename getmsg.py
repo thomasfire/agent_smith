@@ -37,7 +37,7 @@ def markasread(vk_session,msgid):
     vk.messages.markAsRead(message_ids=msgid,start_message_id=msgid)
 
 #cleans from extra info and writes into the file. Returns id of last message
-def cleanup(msgs):
+def cleanup(msgs,chatid):
     histmsg=open('files/msgshistory.db','r')
     msglog=histmsg.read()
     histmsg.close()
@@ -89,7 +89,7 @@ def cleanup(msgs):
 
 
 
-def main(vk_session,chatid):
+def main(vk_session,chatidget):
     #authorization and getting needable tools
     try:
         vk_session.authorization()
@@ -98,19 +98,23 @@ def main(vk_session,chatid):
         return
 
     try:
-        tools = vk_api.VkTools(vk_session)
-        msgs = tools.get_all_slow('messages.get',1,values={'count': 100, 'chat_id': chatid},limit=100)
+        #print('msgid is not defined')
+        vk = vk_session.get_api()
+        msgs = vk.messages.get(count=50, chat_id=chatidget)
     #writing to the file and marking as read
-        msgid=cleanup(msgs)
-    except:
-        print('smth goes wrong at getting messages;')
+        msgid=cleanup(msgs,chatidget)
+        if msgid:
+            try:
+                markasread(vk_session,msgid)
+            except:
+                print('smth goes wrong at marking as read')
+    except Exception as e:
+        print('smth goes wrong at getting messages: ',e)
 
-    if msgid:
-        try:
-            markasread(vk_session,msgid)
-        except:
-            print('smth goes wrong at marking as read')
 
+def captcha_handler(captcha):
+    key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
+    return captcha.try_again(key)
 
 
 if __name__ == '__main__':
@@ -120,10 +124,9 @@ if __name__ == '__main__':
     vset.close()
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
-    chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
+    chatidget=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
     try:
-        vk_session = vk_api.VkApi(login, password)
-    except:
-        print('smth goes wrong at getting vk_session')
-
-    main(vk_session,chatid)
+        vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
+        main(vk_session,chatidget)
+    except Exception as e:
+        print('smth goes wrong at getting vk_session:',e)
