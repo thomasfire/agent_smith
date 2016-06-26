@@ -49,6 +49,11 @@ def main(vk_session,album_id,user_id):
             print("smth goes wrong at updating media: \n",e)
         mediafile.close()
 
+
+def captcha_handler(captcha):
+    key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
+    return captcha.try_again(key)
+
 if __name__ == '__main__':
     #auth
     vset=open("files/vk.settings","r")
@@ -60,7 +65,7 @@ if __name__ == '__main__':
     albumid=int("".join(re.findall(r"album_id=(\d+)#endalbumid",settings)))
     userid=int("".join(re.findall(r"userid=(\d+)#enduserid",settings)))
     try:
-        vk_session = vk_api.VkApi(login, password)
+        vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
     except Exception as e:
         print('smth goes wrong at getting vk_session\n',e)
 

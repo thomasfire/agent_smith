@@ -129,6 +129,10 @@ def main(vk_session,chatid):
     sendtl(vk,chatid)
 
 
+def captcha_handler(captcha):
+    key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
+    return captcha.try_again(key)
+
 if __name__ == '__main__':
     #auth
     vset=open("files/vk.settings","r")
@@ -138,7 +142,7 @@ if __name__ == '__main__':
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
     try:
-        vk_session = vk_api.VkApi(login, password)
+        vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
         main(vk_session,chatid)
     except Exception as e:
         print('smth goes wrong at getting vk_session\n',e)
