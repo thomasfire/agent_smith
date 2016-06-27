@@ -55,6 +55,8 @@ def cleanup(msgs,chatid,vk_session):
                     histmsg.write('Escaped this chat')
                 elif x['action']=='chat_invite_user':
                     histmsg.write('Joined this chat')
+                elif x['action']=='chat_title_update':
+                    histmsg.write('Title updated')
             #writing attachments
             if 'attachments' in x.keys():
                 for y in x['attachments']:
