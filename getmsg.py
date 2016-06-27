@@ -37,7 +37,7 @@ def markasread(vk_session,msgid):
     vk.messages.markAsRead(message_ids=msgid,start_message_id=msgid)
 
 #cleans from extra info and writes into the file. Returns id of last message
-def cleanup(msgs,chatid):
+def cleanup(msgs,chatid,vk_session):
     histmsg=open('files/msgshistory.db','r')
     msglog=histmsg.read()
     histmsg.close()
@@ -102,7 +102,7 @@ def main(vk_session,chatidget):
         vk = vk_session.get_api()
         msgs = vk.messages.get(count=50, chat_id=chatidget)
     #writing to the file and marking as read
-        msgid=cleanup(msgs,chatidget)
+        msgid=cleanup(msgs,chatidget,vk_session)
         if msgid:
             try:
                 markasread(vk_session,msgid)
