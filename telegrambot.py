@@ -119,7 +119,7 @@ def updateusers():
                     newusers.append(y)
 
             f=open('files/tl_users.db','w')
-            f.write('@ '+' ;\n@ '.join(newusers)+' ;')
+            f.write('@ '+' ;\n@ '.join(newusers)+' ;\n')
             f.close()
             f=open('files/tl_msgs.made','a')
             f.write(' '+x.split(' :: ')[0])
@@ -135,7 +135,7 @@ def updateusers():
 
             f=open('files/tl_users.db','a')
             if x.split(' :: ')[3][6:71].strip() in tokens and x.split(' :: ')[1] not in users:
-                f.write('@ '+x.split(' :: ')[1]+' :: '+'Anonymous'+x.split(' :: ')[1]+' :: '+'all ;\n')
+                f.write('@ '+x.split(' :: ')[1]+' :: '+'Anonymous'+x.split(' :: ')[1]+' :: '+'all ;')
                 sendmsg(x.split(' :: ')[1],"You are now successfully authenticated as "+'Anonymous'+x.split(' :: ')[1]+
                 '.\nYou can change your nicname via /chname <new_nick> or you can view a help message via /help.')
 
@@ -165,7 +165,7 @@ def updateusers():
                     newusers.append(y)
             #writing to file and logging the id of the message
             f=open('files/tl_users.db','w')
-            f.write('@ '+' ;\n@ '.join(newusers)+' ;')
+            f.write('@ '+' ;\n@ '.join(newusers)+' ;\n')
             f.close()
             f=open('files/tl_msgs.made','a')
             f.write(' '+x.split(' :: ')[0])
@@ -230,7 +230,7 @@ def response():
      /mode <new_mode> - changes <your_mode> to <new_mode>. Must be all for receiving all messages from VK, imnt
      for receiving important messages and no for receiving no messages;\n
      /quote - sends my random citation from The Matrix;"""
-     
+
     f=open('files/tl_msgs.made','r')
     maden=f.read()
     f.close()
@@ -241,7 +241,7 @@ def response():
     users=f.read()
     f.close()
     for x in msgs:
-        if '@ '+x.split(' :: ')[1].strip()+'  :: ' in users and x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:4]=='/log':
+        if '@ '+x.split(' :: ')[1].strip()+' ' in users and x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:4]=='/log':
             f=open("files/msgshistory.db","r")
             messages=f.read().strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
             f.close()
@@ -315,7 +315,7 @@ def fromvktotl():
     toimnt='\n'.join(toimnt)
     if toall:
         f=open('files/tl_users.db','r')
-        users=f.read().strip('@ ').strip(' ;').split(' ;\n@ ')
+        users=f.read().strip('@').strip(';').strip().split(' ;\n@ ')
         f.close()
         for x in users:
             if x.split(' :: ')[2].strip()=='no':
