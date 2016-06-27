@@ -44,6 +44,7 @@ def main():
             makeseq.main()
             telegrambot.main()
             sendtovk.main(vk_session,chatid)
+            print(cycles)
             cycles+=1
         except Exception as exp:
             print("Something gone wrong in bot:\n",exp)
