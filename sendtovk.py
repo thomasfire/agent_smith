@@ -19,7 +19,7 @@ def sendcit(vk,chatid,num):
     try:
         vk.messages.send(chat_id=chatid,message=msg)
         f=open('files/msgs.made','a')
-        f.write(' '+str(num))
+        f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
         print('smth goes wrong at sending citation to vk:\n',e)
@@ -31,7 +31,7 @@ def sendpic(vk,chatid,num):
     try:
         vk.messages.send(chat_id=chatid,attachment=pic)
         f=open('files/msgs.made','a')
-        f.write(' '+str(num))
+        f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
         print('smth goes wrong at sending picture:\n',e)
@@ -43,7 +43,7 @@ def sendaudio(vk,chatid,num):
     try:
         vk.messages.send(chat_id=chatid,attachment=aud)
         f=open('files/msgs.made','a')
-        f.write(' '+str(num))
+        f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
             print('smth goes wrong at sending audio:\n',e)
@@ -55,7 +55,7 @@ def sendgif(vk,chatid,num):
     try:
         vk.messages.send(chat_id=chatid,attachment=gif)
         f=open('files/msgs.made','a')
-        f.write(' '+str(num))
+        f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
         print('smth goes wrong at sending gif:\n',e)
@@ -67,7 +67,7 @@ def sendinfo(vk,chatid,num):
     try:
         vk.messages.send(chat_id=chatid,message=msg)
         f=open('files/msgs.made','a')
-        f.write(' '+str(num))
+        f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
         print('smth goes wrong at sending info:\n',e)
@@ -113,15 +113,15 @@ def main(vk_session,chatid):
 
     #looking for keywords
     for x in nmsg:
-        if '/quote' in x[2] and str(x[0]).strip() not in sent:
+        if '/quote' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
             sendcit(vk,chatid,x[0])
-        elif '/audio' in x[2] and str(x[0]).strip() not in sent:
+        elif '/audio' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
             sendaudio(vk,chatid,x[0])
-        elif '/gif' in x[2] and str(x[0]).strip() not in sent:
+        elif '/gif' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
             sendgif(vk,chatid,x[0])
-        elif '/info' in x[2] and str(x[0]).strip() not in sent:
+        elif '/info' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
             sendinfo(vk,chatid,x[0])
-        elif '/pic' in x[2] and str(x[0]).strip() not in sent:
+        elif '/pic' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
             sendpic(vk,chatid,x[0])
         else:
             continue
