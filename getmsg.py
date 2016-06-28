@@ -8,6 +8,8 @@
 import vk_api
 import datetime
 import re
+import fcrypto
+import getpass
 
 def getname(user_id,vk_session):
         db=open("files/vk_users.db","r")
@@ -121,9 +123,8 @@ def captcha_handler(captcha):
 
 if __name__ == '__main__':
     #auth
-    vset=open("files/vk.settings","r")
-    settings=vset.read()
-    vset.close()
+    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
+    settings=fcrypto.fdecrypt("files/vk.settings",psswd)
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatidget=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
