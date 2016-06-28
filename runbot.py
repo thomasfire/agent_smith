@@ -12,6 +12,8 @@ import makeseq
 import sendtovk
 import telegrambot
 import re
+import fcrypto
+import getpass
 
 
 def captcha_handler(captcha):
@@ -20,9 +22,8 @@ def captcha_handler(captcha):
 
 
 def main():
-    vset=open("files/vk.settings","r")
-    settings=vset.read()
-    vset.close()
+    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
+    settings=fcrypto.fdecrypt("files/vk.settings",psswd)
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
@@ -42,7 +43,7 @@ def main():
                 updatemedia.main(vk_session,albumid,userid)
                 cycles=0
             makeseq.main()
-            telegrambot.main()
+            telegrambot.main(psswd)
             sendtovk.main(vk_session,chatid)
             print(cycles)
             cycles+=1

@@ -15,20 +15,14 @@ from urllib.parse import quote, urlsplit, urlunsplit
 import json
 import random
 import re
+import fcrypto
+import getpass
 
 
 #https://api.telegram.org/bot<token>/METHOD_NAME
-#TODO пересылка сообщений из вк в телеграм,пересылка из телеграма в вк,предоставлять лог последних n сообщений из вк -almost done
-#TODO 2: добавить возможность пересылки цитатки с помощью /quote; реализовать обработку /help и /msg и /log -done.
-#добавить чистку логов -done
-#/me -done
+#TODO секурность
 
-
-#url of api Telegram
-g=open('files/telegram.token')
-url='https://api.telegram.org/bot'+g.read().strip()+'/'
-g.close()
-
+url=''
 
 #sends a message to Telegram
 def sendmsg(chatid,text):
@@ -81,6 +75,11 @@ def getmsg():
         return 'error'
     return requ
 
+def kickuser(userid):
+    f=open('files/shitlist.db','a')
+    f.write(' '+str(userid))
+    f.close()
+
 
 
 def makedict():
@@ -102,6 +101,9 @@ def updateusers():
     f.close()
     f=open('files/tl_msgs.made','r')
     maden=f.read()
+    f.close()
+    f=open('files/shitlist.db','r')
+    shitlist=f.read().split()
     f.close()
     for x in msgs:
 
@@ -125,25 +127,49 @@ def updateusers():
             f.write(' '+x.split(' :: ')[0])
             f.close()
 
-        elif x.split(' :: ')[0] not in maden and x.split(' :: ')[3][:5]=='/auth':
+        elif (x.split(' :: ')[1] not in shitlist and x.split(' :: ')[0] not in maden and len(x.split(' :: ')[3])<75
+        and len(x.split(' :: ')[3])>60 and x.split(' :: ')[3][:5]=='/auth'):
             f=open('files/tokens.db','r')
             tokens=f.read().split('\n')
             f.close()
             f=open('files/tl_users.db','r')
             users=f.read()
             f.close()
-
+            publickey=fcrypto.gethash(x.split(' :: ')[3][6:71].strip())
             f=open('files/tl_users.db','a')
-            if x.split(' :: ')[3][6:71].strip() in tokens and x.split(' :: ')[1] not in users:
+            q=open('files/tl_tryes.db','r')
+            tryusers=q.read()
+            q.close()
+            if publickey in tokens and ' '+x.split(' :: ')[1]+' ' not in users:
                 f.write('@ '+x.split(' :: ')[1]+' :: '+'Anonymous'+x.split(' :: ')[1]+' :: '+'all ;')
                 sendmsg(x.split(' :: ')[1],"You are now successfully authenticated as "+'Anonymous'+x.split(' :: ')[1]+
                 '.\nYou can change your nicname via /chname <new_nick> or you can view a help message via /help.')
 
                 g=open('files/tokens.db','w')
-                g.write('\n'.join(tokens).replace(x.split(' :: ')[3][6:71].strip()+'\n',''))
+                g.write('\n'.join(tokens).replace(publickey+'\n',''))
                 g.close()
+            elif publickey not in tokens and ' '+x.split(' :: ')[1]+' ' not in users:
+                sendmsg(x.split(' :: ')[1],'Wrong key.')
+                if '@'+x.split(' :: ')[1]+':' not in tryusers:
+                    tryusers+=' @'+x.split(' :: ')[1]+':1'
+                else:
+                    ntryus=tryusers.split()
+                    for y in ntryus:
+                        if '@'+x.split(' :: ')[1]+':' in y:
+                            print(y)
+                            print(y.split(':')[0]+':'+str(int(y.split(':')[1])+1))
+                            tryusers=tryusers.replace(y,
+                            y.split(':')[0]+':'+str(int(y.split(':')[1])+1))
+                            if int(y.split(':')[1])>2:
+                                kickuser(x.split(' :: ')[1])
+                                tryusers=tryusers.replace(y,'')
+                            break
+
+                q=open('files/tl_tryes.db','w')
+                q.write(tryusers)
+                q.close()
             else:
-                sendmsg(x.split(' :: ')[1],'This token is wrong or you are already logged in. You can change your nick via /chname <new_nick> if you are authenticated.')
+                sendmsg(x.split(' :: ')[1],'You are already logged in. You can change your nick via /chname <new_nick> if you are authenticated.')
             f.close()
             f=open('files/tl_msgs.made','a')
             f.write(' '+x.split(' :: ')[0])
@@ -329,10 +355,14 @@ def fromvktotl():
     f.write(' '+' '.join(allmsg))
     f.close()
 
+#url of api Telegram
+def geturl(password):
+    global url
+    url=('https://api.telegram.org/bot'+
+    fcrypto.fdecrypt('files/telegram.token',password).split()[0].replace('token=','').replace(';','')+'/')
 
-
-
-def main():
+def main(password):
+    geturl(password)
     getmsg()
     updateusers()
     makeseq()
@@ -343,4 +373,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
+    main(psswd)
