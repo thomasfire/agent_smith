@@ -48,7 +48,7 @@ def cleanup(msgs,chatid,vk_session):
     msgid=0
     for x in reversed(msgs['items'][:99]):
         #checking if it is needed message
-        if 'chat_id' in x.keys() and x['chat_id']==chatid and str(x['id']) not in msglog and not ';\n@' in x['body']:
+        if 'chat_id' in x.keys() and x['chat_id']==chatid and '@ '+str(x['id'])+' ' not in msglog and not ';\n@' in x['body']:
             histmsg.write('@ '+str(x['id'])+' :: '+getname(x['user_id'],vk_session)+" :: "+
             datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'])
             #writing action
@@ -79,7 +79,11 @@ def cleanup(msgs,chatid,vk_session):
                     elif y['type']=='audio':
                         histmsg.write(' audio '+y['audio']['artist']+y['audio']['title'] +y['audio']['url']+ ' ')
                     elif y['type']=='doc':
-                            histmsg.write(' doc '+y['doc']['title'] +' '+ y['doc']['url']+ ' ')
+                        histmsg.write(' doc '+y['doc']['title'] +' '+ y['doc']['url']+ ' ')
+                    elif y['type']=='link':
+                        histmsg.write(' link '+y['link']['title'] +' '+ y['link']['url']+ ' ')
+                    #elif y['type']=='wall':
+                    #    histmsg.write(' link '+y['wall']['title'] +' '+ y['wall']['url']+ ' ')
             #writing forwarded messages
             if 'fwd_messages' in x.keys():
                 for y in x['fwd_messages']:
