@@ -37,16 +37,18 @@ def main():
         print('smth goes wrong at getting vk_session')
 
     cycles=0
+    lastid=0
+    tllast=0
     while True:
         try:
-            getmsg.main(vk_session,chatid)
+            print('cycle=',cycles,';    vklast=',lastid,';  tllast=',tllast)
+            lastid=getmsg.main(vk_session,chatid,lastid)
             if cycles>=100:
                 updatemedia.main(vk_session,albumid,userid)
                 cycles=0
             makeseq.main()
-            telegrambot.main(psswd)
+            tllast=telegrambot.main(psswd,tllast)
             sendtovk.main(vk_session,chatid)
-            print(cycles)
             cycles+=1
         except Exception as exp:
             print("Something gone wrong in bot:\n",exp)

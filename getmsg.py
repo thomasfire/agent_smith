@@ -93,11 +93,11 @@ def cleanup(msgs,chatid,vk_session):
 
             histmsg.write(' ;\n')
             msgid=x['id']
-    return msgid
+    return msgs['items'][0]['id']
 
 
 
-def main(vk_session,chatidget):
+def main(vk_session,chatidget,lastid=0):
     #authorization and getting needable tools
     try:
         vk_session.authorization()
@@ -108,14 +108,17 @@ def main(vk_session,chatidget):
     try:
         #print('msgid is not defined')
         vk = vk_session.get_api()
-        msgs = vk.messages.get(count=50, chat_id=chatidget)
+        msgs = vk.messages.get(count=50, chat_id=chatidget,last_message_id=lastid)
     #writing to the file and marking as read
-        msgid=cleanup(msgs,chatidget,vk_session)
-        if msgid:
-            try:
-                markasread(vk_session,msgid)
-            except:
-                print('smth goes wrong at marking as read')
+        if msgs['items']:
+            msgid=cleanup(msgs,chatidget,vk_session)
+            if msgid:
+                try:
+                    markasread(vk_session,msgid)
+                except:
+                    print('smth goes wrong at marking as read')
+                return msgid
+        return lastid
     except Exception as e:
         print('smth goes wrong at getting messages: ',e)
 

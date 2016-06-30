@@ -46,10 +46,10 @@ def sendmsg(chatid,text):
 
 
 #gets and logs to file new messages
-def getmsg():
+def getmsg(offset=0):
     global url
     try:
-        requ=requests.get(url+'getUpdates').json()
+        requ=requests.get(url+'getUpdates'+'?offset='+str(offset)).json()
         f=open('files/tl_msgs.db','r')
         msglist=f.read()
         f.close()
@@ -73,7 +73,7 @@ def getmsg():
     except Exception as e:
         print(' A error occured while getting updates in Telegram:\n',e)
         return 'error'
-    return requ
+    return requ['result'][-1]['update_id']
 
 def kickuser(userid):
     f=open('files/shitlist.db','a')
@@ -360,15 +360,17 @@ def geturl(password):
     global url
     url=('https://api.telegram.org/bot'+
     fcrypto.fdecrypt('files/telegram.token',password).split()[0].replace('token=','').replace(';','')+'/')
+    #print(url)
 
-def main(password):
+def main(password,lastid):
     geturl(password)
-    getmsg()
+    offset=getmsg(lastid)
     updateusers()
     makeseq()
     response()
     fromvktotl()
     cleanup()
+    return offset
 
 
 
