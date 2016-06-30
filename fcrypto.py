@@ -21,7 +21,7 @@ def gethash(smstr, mode='token'):
     if mode=='pass':
         for x in range(2**18):
             nhash=hashlib.sha256(salt.encode('ascii')+nhash.encode('ascii')).hexdigest()
-        return hashlib.md5(salt.encode('ascii')+nhash.encode('ascii')).hexdigest()
+        return hashlib.sha256(salt.encode('ascii')+nhash.encode('ascii')).digest()
     elif mode=='token':
         for x in range(2**18):
             nhash=hashlib.sha512(salt.encode('ascii')+nhash.encode('ascii')).hexdigest()
@@ -37,7 +37,7 @@ def fencrypt(filen,password):
     else:
         nstr=smstr.encode('utf-8')
 
-    psswd=Twofish(password.encode('utf-8'))
+    psswd=Twofish(password)
     encredstr=b''
 
     for x in range(int(len(nstr)/16)):
@@ -52,7 +52,7 @@ def fdecrypt(filen,password):
     f=open(filen,'rb')
     smstr=f.read()
     f.close()
-    psswd=Twofish(password.encode('utf-8'))
+    psswd=Twofish(password)
     decredstr=b''
 
     for x in range(int(len(smstr)/16)):
