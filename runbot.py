@@ -24,6 +24,7 @@ def captcha_handler(captcha):
 def main():
     psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
     settings=fcrypto.fdecrypt("files/vk.settings",psswd)
+    #print(settings)
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
