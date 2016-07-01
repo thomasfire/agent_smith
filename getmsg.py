@@ -45,7 +45,6 @@ def cleanup(msgs,chatid,vk_session):
     histmsg.close()
     histmsg=open('files/msgshistory.db','a')
     #writing the messages to the file
-    msgid=0
     for x in reversed(msgs['items'][:99]):
         #checking if it is needed message
         if 'chat_id' in x.keys() and x['chat_id']==chatid and '@ '+str(x['id'])+' ' not in msglog and not ';\n@' in x['body']:
@@ -92,7 +91,6 @@ def cleanup(msgs,chatid,vk_session):
                     " :: "+y['body'])
 
             histmsg.write(' ;\n')
-            msgid=x['id']
     return msgs['items'][0]['id']
 
 
