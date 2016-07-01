@@ -15,7 +15,7 @@ import os
 
 #returns secure hash
 def gethash(smstr, mode='token'):
-    salt=hashlib.md5(b'fghjfjkjlktycvq/.,ASS ON KEYBOARD t567 tx546e!@$^*#)%&/*-+-thgklh;xmnvhgjfty'+
+    salt=hashlib.sha512(b'fghjfjkjlktycvq/.,ASS ON KEYBOARD t567 tx546e!@$^*#)%&/*-+-thgklh;xmnvhgjfty'+
     smstr.encode('ascii')).hexdigest()
     nhash=hashlib.sha256(salt.encode('ascii')+smstr.encode('ascii')).hexdigest()
     if mode=='pass':
@@ -63,7 +63,7 @@ def fdecrypt(filen,password):
 #generates private and public hashes to auth
 def genhash(smstr):
     nstring=str(os.urandom(16))+smstr+str(os.urandom(16))
-    salt=hashlib.md5(b'fghjfjkjlktycvq/.,ASS ON KEYBOARD t567 tx546e!@$^*#)%&/*-+-thgklh;thicxxbmnvhgjfty'+
+    salt=hashlib.sha512(b'fghjfjkjlktycvq/.,ASS ON KEYBOARD t567 tx546e!@$^*#)%&/*-+-thgklh;thicxxbmnvhgjfty'+
     smstr.encode('ascii')).hexdigest()
     nhash=hashlib.sha256(salt.encode('ascii')+nstring.encode('ascii')).hexdigest()
     for x in range(2**10):
