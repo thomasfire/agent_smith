@@ -21,7 +21,7 @@ def main():
         listofmsgs[x]=listofmsgs[x].strip('@ ').strip(' ;')
 
     f=open('files/msgs.sent','r')
-    sent=f.read()
+    sent=f.read().split()
     f.close
     f=open('files/msgs.seq','w')
 
