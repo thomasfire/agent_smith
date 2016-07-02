@@ -240,21 +240,21 @@ def makeseq():
 
 #checks for /log or /help or /quote and responses to user
 def response():
-    helpmsg="""I`m Agent Smith (beta0.2 July 01 2016). I`m builded with elastic methods, ad-hoc solvings
-     and nonstop integration. Beta is unstable, something can work incorrect or do not work. Please report @Thomas_Fire if you
+    helpmsg="""I`m Agent Smith v0.5testing. I`m builded with elastic methods, ad-hoc solvings
+     and nonstop integration. Testing is unstable, something can work incorrect or do not work. Please report @Thomas_Fire if you
      find a bug. I can execute some commands and send messages from VK to this chat and back. So you can do not open
      VK without worrying miss something imortant. But you need allowance of the @Thomas_Fire to use this bot. He will send you
-     an token to log in and use all features. UPD 0.1: Enabled security; UPD 0.2: improved security; So you need first /auth <token> to log in and start receiving messages.\n
-     There are commands I can do:\n
+     an token to log in and use all features. UPD 0.1: Enabled security; UPD 0.2: improved security; UPD 0.5: improved my speed; So you need first /auth <token> to log in and start receiving messages.
+     There are commands I can do:
      /auth <token> - log in via <token> you have,after you log in you will be receiving all messages and your nick will
-      be Anonymous<some numbers>, but you can change mode or nick;\n
-     /help - view this message;\n
-     /me - information about you: your nickname and mode of receiving messages;\n
-     /log <N> - where <N> is integer number. You will receive N latest messages from VK;\n
-     /msg <message_text> - sends <your_nick>:<message_text> to VK;\n
-     /chname <new_nick> - changes <your_nick> to <new_nick>;\n
+      be Anonymous<some numbers>, but you can change mode or nick;
+     /help - view this message;\
+     /me - information about you: your nickname and mode of receiving messages;
+     /log <N> - where <N> is integer number. You will receive N latest messages from VK;
+     /msg <message_text> - sends <your_nick>:<message_text> to VK;
+     /chname <new_nick> - changes <your_nick> to <new_nick>;
      /mode <new_mode> - changes <your_mode> to <new_mode>. Must be all for receiving all messages from VK, imnt
-     for receiving important messages and no for receiving no messages;\n
+     for receiving important messages and no for receiving no messages;
      /quote - sends my random citation from The Matrix;"""
 
     f=open('files/tl_msgs.made','r')
