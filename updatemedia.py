@@ -31,17 +31,8 @@ def updategifs(vk,mediafile):
         newgif.append(str(x['owner_id'])+'_'+str(x['id']))
     mediafile.write('doc:{ '+' '.join(newgif)+' };\n\n')
 
-def main(vk_session,album_id,user_id):
-        #authorization and getting needable tools
-        try:
-            vk_session.authorization()
-        except vk_api.AuthorizationError as error_msg:
-            print(error_msg)
-            return
-        try:
-            vk = vk_session.get_api()
-        except Exception as e:
-            print('smth goes wrong at getting vk api\n',e)
+def main(vk_session,album_id,user_id,vk):
+
         mediafile=open('files/media.db','w')
         try:
             updateaudio(vk,mediafile)
@@ -69,5 +60,16 @@ if __name__ == '__main__':
         vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
     except Exception as e:
         print('smth goes wrong at getting vk_session\n',e)
+    #authorization
+    try:
+        vk_session.authorization()
+    except vk_api.AuthorizationError as error_msg:
+        print(error_msg)
+        
+    #getting api
+    try:
+        vk = vk_session.get_api()
+    except Exception as e:
+        print('smth goes wrong at getting vk api\n',e)
 
     main(vk_session,albumid,userid)

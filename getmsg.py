@@ -95,17 +95,10 @@ def cleanup(msgs,chatid,vk_session):
 
 
 
-def main(vk_session,chatidget,lastid=0):
-    #authorization and getting needable tools
-    try:
-        vk_session.authorization()
-    except vk_api.AuthorizationError as error_msg:
-        print(error_msg)
-        return
+def main(vk_session,chatidget,vk,lastid=0):
 
     try:
-        #print('msgid is not defined')
-        vk = vk_session.get_api()
+        #vk = vk_session.get_api()
         msgs = vk.messages.get(count=50, chat_id=chatidget,last_message_id=lastid)
     #writing to the file and marking as read
         if msgs['items']:
@@ -135,6 +128,13 @@ if __name__ == '__main__':
     chatidget=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
     try:
         vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
-        main(vk_session,chatidget)
     except Exception as e:
         print('smth goes wrong at getting vk_session:',e)
+
+    #authorization
+    try:
+        vk_session.authorization()
+    except vk_api.AuthorizationError as error_msg:
+        print(error_msg)
+
+    main(vk_session,chatidget,vk)
