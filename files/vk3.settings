@@ -1,0 +1,5 @@
+chatid=123#endchatid     //ID of the group you want to send
+login=login@example.com#endlogin    //Your login
+password=pass123#endpass
+album_id=123456#endalbumid
+userid=123456#enduserid
