@@ -56,7 +56,7 @@ def main():
         try:
             print('cycle=',cycles,';    vklast=',lastid,';  tllast=',tllast)
             lastid=getmsg.main(vk_session,chatid,vk,lastid)
-            if cycles>=100:
+            if cycles>=500:
                 updatemedia.main(vk_session,albumid,userid,vk)
                 cycles=0
             makeseq.main()
