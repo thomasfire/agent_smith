@@ -1,10 +1,15 @@
 #!/usr/bin/python3
 
 #gets and writes messages
+""" Developer and Author: Thomas Fire https://github.com/thomasfire
+### Main manager: Uliy Bee
+"""
 
 import vk_api
 import datetime
 import re
+import fcrypto
+import getpass
 
 def getname(user_id,vk_session):
         db=open("files/vk_users.db","r")
@@ -16,49 +21,43 @@ def getname(user_id,vk_session):
             users=users.split("\n")
             for x in users:
                 if str(user_id) in x:
-                    return x.split(':')[1]
+                    return x.split('::')[1]
         else:
             db.close()
             vk = vk_session.get_api()
             name=vk.users.get(user_ids=user_id)
             #saving info of this id to the file for the fast working next time
             db=open("files/vk_users.db","a")
-            db.write(str(user_id)+":"+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
+            db.write(str(user_id)+" :: "+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
             db.close()
 
             return " ".join([name[0]['first_name'],name[0]['last_name']])
 
 
-def main(vk_session,chatid):
+def markasread(vk_session,msgid):
+    vk = vk_session.get_api()
+    vk.messages.markAsRead(message_ids=msgid,start_message_id=msgid)
 
-    #authorization and getting needable tools
-
-    try:
-        vk_session.authorization()
-    except vk_api.AuthorizationError as error_msg:
-        print(error_msg)
-        return
-
-    tools = vk_api.VkTools(vk_session)
-    msgs = tools.get_all('messages.get',1,values={'count': 100, 'chat_id': chatid},limit=1)
-
+#cleans from extra info and writes into the file. Returns id of last message
+def cleanup(msgs,chatid,vk_session):
     histmsg=open('files/msgshistory.db','r')
     msglog=histmsg.read()
     histmsg.close()
     histmsg=open('files/msgshistory.db','a')
-
     #writing the messages to the file
     for x in reversed(msgs['items'][:99]):
         #checking if it is needed message
-        if 'chat_id' in x.keys() and x['chat_id']==chatid and str(x['id']) not in msglog:
-            histmsg.write('@ '+str(x['id'])+' : '+getname(x['user_id'],vk_session)+"  "+
-            datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' : '+x['body'])
+        if 'chat_id' in x.keys() and x['chat_id']==chatid and '@ '+str(x['id'])+' ' not in msglog and not ';\n@' in x['body']:
+            histmsg.write('@ '+str(x['id'])+' :: '+getname(x['user_id'],vk_session)+" :: "+
+            datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'])
             #writing action
             if 'action' in x.keys():
                 if x['action']=='chat_kick_user':
                     histmsg.write('Escaped this chat')
                 elif x['action']=='chat_invite_user':
                     histmsg.write('Joined this chat')
+                elif x['action']=='chat_title_update':
+                    histmsg.write('Title updated')
             #writing attachments
             if 'attachments' in x.keys():
                 for y in x['attachments']:
@@ -79,26 +78,63 @@ def main(vk_session,chatid):
                     elif y['type']=='audio':
                         histmsg.write(' audio '+y['audio']['artist']+y['audio']['title'] +y['audio']['url']+ ' ')
                     elif y['type']=='doc':
-                            histmsg.write(' doc '+y['doc']['title'] +' '+ y['doc']['url']+ ' ')
+                        histmsg.write(' doc '+y['doc']['title'] +' '+ y['doc']['url']+ ' ')
+                    elif y['type']=='link':
+                        histmsg.write(' link '+y['link']['title'] +' '+ y['link']['url']+ ' ')
+                    #elif y['type']=='wall':
+                    #    histmsg.write(' link '+y['wall']['title'] +' '+ y['wall']['url']+ ' ')
             #writing forwarded messages
             if 'fwd_messages' in x.keys():
                 for y in x['fwd_messages']:
-                    histmsg.write(" forwarded from "+getname(y['user_id'],vk_session)+" "+
+                    histmsg.write(" forwarded from "+getname(y['user_id'],vk_session)+" :: "+
                     datetime.datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
-                    " : "+y['body'])
+                    " :: "+y['body'])
+
+            histmsg.write(' ;\n')
+    return msgs['items'][0]['id']
 
 
-            histmsg.write(';\n')
+
+def main(vk_session,chatidget,lastid=0):
+    #authorization and getting needable tools
+    try:
+        vk_session.authorization()
+    except vk_api.AuthorizationError as error_msg:
+        print(error_msg)
+        return
+
+    try:
+        #print('msgid is not defined')
+        vk = vk_session.get_api()
+        msgs = vk.messages.get(count=50, chat_id=chatidget,last_message_id=lastid)
+    #writing to the file and marking as read
+        if msgs['items']:
+            msgid=cleanup(msgs,chatidget,vk_session)
+            if msgid:
+                try:
+                    markasread(vk_session,msgid)
+                except:
+                    print('smth goes wrong at marking as read')
+                return msgid
+        return lastid
+    except Exception as e:
+        print('smth goes wrong at getting messages: ',e)
+
+
+def captcha_handler(captcha):
+    key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
+    return captcha.try_again(key)
 
 
 if __name__ == '__main__':
     #auth
-    vset=open("files/vk.settings","r")
-    settings=vset.read()
-    vset.close()
+    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
+    settings=fcrypto.fdecrypt("files/vk.settings",psswd)
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
-    chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
-    vk_session = vk_api.VkApi(login, password)
-
-    main(vk_session,chatid)
+    chatidget=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
+    try:
+        vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
+        main(vk_session,chatidget)
+    except Exception as e:
+        print('smth goes wrong at getting vk_session:',e)

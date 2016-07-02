@@ -102,7 +102,7 @@ class VkApi(object):
     def authorization(self, reauth=False):
         """ Полная авторизация с получением токена
 
-        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные 
+        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
                         куки и токен
         """
 
@@ -170,6 +170,7 @@ class VkApi(object):
             self.sid = remixsid
 
         elif 'sid=' in response.url:
+            #print(response.url)
             captcha_sid = search_re(RE_CAPTCHAID, response.url)
             captcha = Captcha(self, captcha_sid, self.vk_login)
 
@@ -602,4 +603,4 @@ class Captcha(Exception):
         return self.func(*self.args, **self.kwargs)
 
     def __str__(self):
-        return 'Captcha needed'
+        return 'Captcha needed '+str(self.get_url())
