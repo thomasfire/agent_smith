@@ -15,7 +15,9 @@ How to setup and configure bot:
 5. Now you can run bot via $ python3 runbot.py . It will ask you for the password to decrypt the settings files (it is password you entered in the beginning of the 2nd point of this guide).
 
 Main features, issues, and description of files and modules:
+
 Features:
+
 	1. Sending messages from VK chat to Telegram and from Telegram to VK;
 
 	2. Sending gifs, music, photos from choosen album VK to VK chat;
