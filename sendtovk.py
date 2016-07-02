@@ -74,7 +74,7 @@ def sendinfo(vk,chatid,num):
     except Exception as e:
         print('smth goes wrong at sending info:\n',e)
 
-#sends nessages from Telegram to vk
+#sends messages from Telegram to vk
 def sendtl(vk, chatid):
     try:
         f=open('files/tl_msgs.seq','r')
@@ -90,7 +90,7 @@ def sendtl(vk, chatid):
 
 
 
-def main(vk_session,chatid):
+def main(vk_session,chatid,vk):
     f=open('files/msgshistory.db','r')
     msgs=f.read().split(';\n@')[-10:]
     f.close()
@@ -100,18 +100,6 @@ def main(vk_session,chatid):
     f=open('files/msgs.made','r')
     sent=f.read()
     f.close()
-
-    #authorization and getting needable tools
-    try:
-        vk_session.authorization()
-    except vk_api.AuthorizationError as error_msg:
-        print(error_msg)
-        return
-
-    try:
-        vk = vk_session.get_api()
-    except Exception as e:
-        print('smth goes wrong at geting api\n',e)
 
     #looking for keywords
     for x in nmsg:
@@ -147,3 +135,14 @@ if __name__ == '__main__':
         main(vk_session,chatid)
     except Exception as e:
         print('smth goes wrong at getting vk_session\n',e)
+
+    #authorization and getting needable tools
+    try:
+        vk_session.authorization()
+    except vk_api.AuthorizationError as error_msg:
+        print(error_msg)
+        
+    try:
+        vk = vk_session.get_api()
+    except Exception as e:
+        print('smth goes wrong at geting api\n',e)

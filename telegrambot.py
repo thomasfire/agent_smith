@@ -360,10 +360,12 @@ def geturl(password):
     global url
     url=('https://api.telegram.org/bot'+
     fcrypto.fdecrypt('files/telegram.token',password).split()[0].replace('token=','').replace(';','')+'/')
-    #print(url)
+    return url
 
-def main(password,lastid):
-    geturl(password)
+def main(password,lastid,urltl):
+    global url
+    url=urltl
+    #geturl(password)
     offset=getmsg(lastid)
     updateusers()
     makeseq()
@@ -376,4 +378,5 @@ def main(password,lastid):
 
 if __name__ == '__main__':
     psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
+    geturl(psswd)
     main(psswd)
