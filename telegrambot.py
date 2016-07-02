@@ -240,11 +240,11 @@ def makeseq():
 
 #checks for /log or /help or /quote and responses to user
 def response():
-    helpmsg="""I`m Agent Smith (beta0.0 June 27 2016). I`m builded with elastic methods, ad-hoc solvings
+    helpmsg="""I`m Agent Smith (beta0.2 July 01 2016). I`m builded with elastic methods, ad-hoc solvings
      and nonstop integration. Beta is unstable, something can work incorrect or do not work. Please report @Thomas_Fire if you
      find a bug. I can execute some commands and send messages from VK to this chat and back. So you can do not open
      VK without worrying miss something imortant. But you need allowance of the @Thomas_Fire to use this bot. He will send you
-     an token to log in and use all features. So you need first /auth <token> to log in and start receiving messages.\n
+     an token to log in and use all features. UPD 0.1: Enabled security; UPD 0.2: improved security; So you need first /auth <token> to log in and start receiving messages.\n
      There are commands I can do:\n
      /auth <token> - log in via <token> you have,after you log in you will be receiving all messages and your nick will
       be Anonymous<some numbers>, but you can change mode or nick;\n
