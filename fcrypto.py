@@ -23,7 +23,7 @@ def gethash(smstr, mode='token'):
             nhash=hashlib.sha256(salt.encode('ascii')+nhash.encode('ascii')).hexdigest()
         return hashlib.sha256(salt.encode('ascii')+nhash.encode('ascii')).digest()
     elif mode=='token':
-        for x in range(2**18):
+        for x in range(2**10):
             nhash=hashlib.sha512(salt.encode('ascii')+nhash.encode('ascii')).hexdigest()
         return hashlib.sha512(salt.encode('ascii')+nhash.encode('ascii')).hexdigest()
 
@@ -111,6 +111,8 @@ def main():
         f.write(publickey+'\n')
         f.close()
         print('Private key:'+privatekey)
+    elif len(sys.argv)>1 and sys.argv[1]=='-hash':
+        print(gethash(input('Enter any ascii string: '),mode='token'))
     else:
         print('Usage: python3 fcrypto.py [-addkeys , -setup]')
 
