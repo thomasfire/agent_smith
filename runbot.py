@@ -14,10 +14,14 @@ import telegrambot
 import re
 import fcrypto
 import getpass
+import tlapi as tl
 
+lastid=0
+url=''
 
 def captcha_handler(captcha):
-    key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
+    global lastid
+    key = tl.getcaptcha(url,captcha.get_url().strip(),lastid).strip(';').strip()
     return captcha.try_again(key)
 
 
@@ -47,10 +51,11 @@ def main():
         print('smth goes wrong at geting api\n',e)
 
     #getting url
-    url=telegrambot.geturl(psswd)
+    global url
+    url=tl.geturl(psswd)
 
     cycles=0
-    lastid=0
+    global lastid
     tllast=0
     while True:
         try:
@@ -65,8 +70,6 @@ def main():
             cycles+=1
         except Exception as exp:
             print("Something gone wrong in bot:\n",exp)
-
-
 
 
 
