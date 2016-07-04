@@ -5,8 +5,6 @@
 ### Main manager: Uliy Bee
 """
 
-#TODO лог обработанных сообщений,ответ на сообщения-сделано,пересылка сообщений из лога телеграма
-
 
 import vk_api
 import re
@@ -64,7 +62,7 @@ def sendgif(vk,chatid,num):
 
 def sendinfo(vk,chatid,num):
     f=open('files/info.db','r')
-    msg=f.read()
+    msg=f.read().split('VK@@##@@TL')[0].strip()
     f.close()
     try:
         vk.messages.send(chat_id=chatid,message=msg)
@@ -141,7 +139,7 @@ if __name__ == '__main__':
         vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
         print(error_msg)
-        
+
     try:
         vk = vk_session.get_api()
     except Exception as e:
