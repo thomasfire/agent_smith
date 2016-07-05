@@ -63,7 +63,11 @@ Description about files and modules:
 
 	telegrambot.py - bot in Telegram, works with many files;
 
-	files:
+	tlapi.py - some often used functions for Telegram API;
+
+	files/:
+		
+		admins.db - list of admins in Telegram bot;
 
 		citations.db - list of citations to send to VK;
 
@@ -103,6 +107,6 @@ Description about files and modules:
 
 	
 
-	vk_api - foreign library with Apache license for easy using VK API;
+	vk_api/ - foreign library with Apache license for easy using VK API;
 
-	jconfig - library that is used by vk_api;
+	jconfig/ - library that is used by vk_api;
