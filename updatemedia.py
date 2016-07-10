@@ -72,4 +72,4 @@ if __name__ == '__main__':
     except Exception as e:
         print('smth goes wrong at getting vk api\n',e)
 
-    main(vk_session,albumid,userid)
+    main(vk_session,albumid,userid,vk)

@@ -15,6 +15,7 @@ import re
 import fcrypto
 import getpass
 import tlapi as tl
+import gc
 
 lastid=0
 url=''
@@ -58,12 +59,15 @@ def main():
     global lastid
     tllast=0
     while True:
+        #print(gc.get_stats())
         try:
             print('cycle=',cycles,';    vklast=',lastid,';  tllast=',tllast)
             lastid=getmsg.main(vk_session,chatid,vk,lastid)
             if cycles>=500:
                 updatemedia.main(vk_session,albumid,userid,vk)
                 cycles=0
+                gc.collect()
+                print('\n'.join(gc.get_objects())+'\n\n')
             makeseq.main()
             tllast=telegrambot.main(psswd,tllast,url)
             sendtovk.main(vk_session,chatid,vk)
