@@ -9,6 +9,10 @@ import vk_api
 import re
 import fcrypto
 import getpass
+import logging
+
+
+
 
 def updateaudio(vk,mediafile):
     audlist=vk.audio.get(need_user=1,count=0)
@@ -31,7 +35,7 @@ def updategifs(vk,mediafile):
         newgif.append(str(x['owner_id'])+'_'+str(x['id']))
     mediafile.write('doc:{ '+' '.join(newgif)+' };\n\n')
 
-def main(vk_session,album_id,user_id,vk):
+def main(vk,album_id,user_id):
 
         mediafile=open('files/media.db','w')
         try:
@@ -39,7 +43,7 @@ def main(vk_session,album_id,user_id,vk):
             updatepics(vk,mediafile,album_id,user_id)
             updategifs(vk,mediafile)
         except Exception as e:
-            print("smth goes wrong at updating media: \n",e)
+            logging.exception("smth goes wrong at updating media: \n")
         mediafile.close()
 
 
@@ -48,6 +52,9 @@ def captcha_handler(captcha):
     return captcha.try_again(key)
 
 if __name__ == '__main__':
+    logging.basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
+    level = logging.WARNING, filename = 'logs/updatemedia.log')
+
     #auth
     psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
     settings=fcrypto.fdecrypt("files/vk.settings",psswd)
@@ -59,17 +66,17 @@ if __name__ == '__main__':
     try:
         vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
     except Exception as e:
-        print('smth goes wrong at getting vk_session\n',e)
+        logging.exception('smth goes wrong at getting vk_session\n')
     #authorization
     try:
         vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
-        print(error_msg)
-        
+        logging.exception(error_msg)
+
     #getting api
     try:
         vk = vk_session.get_api()
     except Exception as e:
-        print('smth goes wrong at getting vk api\n',e)
+        logging.exception('smth goes wrong at getting vk api\n')
 
-    main(vk_session,albumid,userid,vk)
+    main(vk,albumid,userid)

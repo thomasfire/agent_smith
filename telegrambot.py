@@ -219,7 +219,6 @@ def response():
             try:
                 tosend='\n'.join(newmsg[-int(currmsg[3][5:].strip().strip(' ;')):])
             except Exception as e:
-                print('Error in making message')
                 tosend='You typed incorrect value. Maybe you requested more messages I have, or you typed non integer number.'
             tl.sendmsg(url,currmsg[1].strip(), tosend)
             f=open('files/tl_msgs.made','a')
@@ -257,7 +256,6 @@ def response():
             try:
                 tosend='\n'.join(newmsg[-int(currmsg[3][7:].strip().strip(' ;')):])
             except Exception as e:
-                print('Error in making message')
                 tosend='You typed incorrect value. Maybe you requested more messages I have, or you typed non integer number.'
             tl.sendmsg(url,currmsg[1].strip(), tosend)
             f=open('files/tl_msgs.made','a')
@@ -314,7 +312,7 @@ def fromvktotl():
 
 
 
-def main(password,lastid,urltl):
+def main(password,urltl,lastid=0):
     global url
     url=urltl
     offset=tl.getmsg(url,lastid)
@@ -330,4 +328,4 @@ def main(password,lastid,urltl):
 if __name__ == '__main__':
     psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
     url=tl.geturl(psswd)
-    main(psswd)
+    main(psswd,url)

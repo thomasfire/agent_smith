@@ -11,6 +11,10 @@ import re
 import random
 import fcrypto
 import getpass
+import logging
+
+
+
 
 def sendcit(vk,chatid,num):
     f=open('files/citations.db','r')
@@ -22,7 +26,7 @@ def sendcit(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-        print('smth goes wrong at sending citation to vk:\n',e)
+        logging.exception('smth goes wrong at sending citation to vk:\n')
 
 def sendpic(vk,chatid,num):
     f=open('files/media.db')
@@ -34,7 +38,7 @@ def sendpic(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-        print('smth goes wrong at sending picture:\n',e)
+        logging.exception('smth goes wrong at sending picture:\n')
 
 def sendaudio(vk,chatid,num):
     f=open('files/media.db')
@@ -46,7 +50,7 @@ def sendaudio(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-            print('smth goes wrong at sending audio:\n',e)
+            logging.exception('smth goes wrong at sending audio:\n')
 
 def sendgif(vk,chatid,num):
     f=open('files/media.db')
@@ -58,7 +62,7 @@ def sendgif(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-        print('smth goes wrong at sending gif:\n',e)
+        logging.exception('smth goes wrong at sending gif:\n')
 
 def sendinfo(vk,chatid,num):
     f=open('files/info.db','r')
@@ -70,7 +74,7 @@ def sendinfo(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-        print('smth goes wrong at sending info:\n',e)
+        logging.exception('smth goes wrong at sending info:\n')
 
 #sends messages from Telegram to vk
 def sendtl(vk, chatid):
@@ -84,11 +88,11 @@ def sendtl(vk, chatid):
         f.write('')
         f.close()
     except Exception as e:
-        print('smth goes wrong at sending messages from Telegram:\n',e)
+        logging.exception('smth goes wrong at sending messages from Telegram:\n')
 
 
 
-def main(vk_session,chatid,vk):
+def main(vk,chatid):
     f=open('files/msgshistory.db','r')
     msgs=f.read().split(';\n@')[-10:]
     f.close()
@@ -122,6 +126,10 @@ def captcha_handler(captcha):
     return captcha.try_again(key)
 
 if __name__ == '__main__':
+    #configuring logs
+    logging.basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
+    level = logging.WARNING, filename = 'logs/sendtovk.log')
+
     #auth
     psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
     settings=fcrypto.fdecrypt("files/vk.settings",psswd)
@@ -132,15 +140,17 @@ if __name__ == '__main__':
         vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
         main(vk_session,chatid)
     except Exception as e:
-        print('smth goes wrong at getting vk_session\n',e)
+        logging.exception('smth goes wrong at getting vk_session\n')
 
     #authorization and getting needable tools
     try:
         vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
-        print(error_msg)
+        logging.exception(error_msg)
 
     try:
         vk = vk_session.get_api()
     except Exception as e:
-        print('smth goes wrong at geting api\n',e)
+        logging.exception('smth goes wrong at geting api\n')
+
+    main(vk,chatid)

@@ -14,6 +14,7 @@ import requests
 import datetime
 from urllib.parse import quote, urlsplit, urlunsplit
 import fcrypto
+import logging
 
 
 #url of api Telegram
@@ -33,11 +34,11 @@ def sendmsg(url,chatid,text):
         req.close()
     except urllib.error.HTTPError as msg_error:
         print(' sendMessage have gone wrong; ')
-        print(msg_error)
+        logging.exception(msg_error)
         return 'error'
     except urllib.error.URLError as msg_error:
         print(' Check your connection status; ')
-        print(msg_error)
+        logging.exception(msg_error)
         return 'error'
 
     return codecs.decode(str(requ, encoding="utf-8"),'unicode_escape')
@@ -71,7 +72,7 @@ def getmsg(url,offset=0):
 
         f.close()
     except Exception as e:
-        print(' A error occured while getting updates in Telegram:\n',e)
+        logging.exception(' A error occured while getting updates in Telegram:\n')
         return 'error'
     return requ['result'][-1]['update_id']
 
