@@ -88,7 +88,7 @@ def main():
         f=open('files/vk.settings','w')
         f.write('chatid={0}#endchatid\n'.format(input('Enter chat id: ')))
         f.write('login={0}#endlogin\n'.format(input('Enter login: ')))
-        f.write('password={0}#endpass\n'.format(getpass.getpass('Enter password: ')))
+        f.write('password={0}#endpass\n'.format(getpass('Enter password: ')))
         f.write('album_id={0}#endalbumid\n'.format(input('Enter album id: ')))
         f.write('userid={0}#enduserid\n'.format(input('Enter user id: ')))
         f.write('ACHTUNG!THIS IS UNENCRYPTED TEXT!')
