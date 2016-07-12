@@ -6,15 +6,11 @@
 ### Main manager: Uliy Bee
 """
 
-#import json
-#import urllib
-#import urllib.request
-#import codecs
 from requests  import get as urlget
 from datetime import datetime
-#from urllib.parse import quote, urlsplit, urlunsplit
 from fcrypto import fdecrypt
 from logging import exception,basicConfig,WARNING
+from urllib.parse import quote, urlsplit, urlunsplit
 
 
 #url of api Telegram
@@ -30,14 +26,11 @@ def sendmsg(url,chatid,text):
 
     try:
         requ=urlget(url+'sendMessage?chat_id='+str(chatid)+'&text='+ntext).json()
-    except urllib.error.HTTPError as msg_error:
+    except Exception as msg_error:
         print(' sendMessage have gone wrong; ')
         exception(msg_error)
         return 'error'
-    except urllib.error.URLError as msg_error:
-        print(' Check your connection status; ')
-        exception(msg_error)
-        return 'error'
+
 
     return str(requ)
 
