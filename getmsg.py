@@ -7,33 +7,125 @@
 
 import vk_api
 from datetime import datetime
-from logging import exception,basicConfig,WARNING,debug
+from logging import exception,basicConfig,WARNING,warning
 
 
 def getname(user_id,vk):
-        db=open("files/vk_users.db","r")
-        users=db.read()
+    if int(user_id)<0:
+        return '<club>'
 
-        #checking if there are information about this user in database
+    db=open("files/vk_users.db","r")
+    users=db.read()
 
-        if str(user_id) in users:
-            users=users.split("\n")
-            for x in users:
-                if str(user_id) in x:
-                    return x.split('::')[1]
-        else:
-            db.close()
-            name=vk.users.get(user_ids=user_id)
-            #saving info of this id to the file for the fast working next time
-            db=open("files/vk_users.db","a")
-            db.write(str(user_id)+" :: "+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
-            db.close()
+    #checking if there are information about this user in database
 
-            return " ".join([name[0]['first_name'],name[0]['last_name']])
+    if str(user_id) in users:
+        users=users.split("\n")
+        for x in users:
+            if str(user_id) in x:
+                return x.split('::')[1]
+    else:
+        db.close()
+        name=vk.users.get(user_ids=user_id)
+        #saving info of this id to the file for the fast working next time
+        db=open("files/vk_users.db","a")
+        db.write(str(user_id)+" :: "+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
+        db.close()
+        return " ".join([name[0]['first_name'],name[0]['last_name']])
 
 
 def markasread(vk,msgid):
     vk.messages.markAsRead(message_ids=msgid,start_message_id=msgid)
+
+
+
+#finds attachments in messages
+def findattachment(x,histmsg,vk):
+    #writing action
+    if 'action' in x.keys():
+        if x['action']=='chat_kick_user':
+            histmsg.write('Escaped this chat  ')
+        elif x['action']=='chat_invite_user':
+            histmsg.write('Joined this chat  ')
+        elif x['action']=='chat_title_update':
+            histmsg.write('Title updated  ')
+        elif x['action']=='chat_photo_remove':
+            histmsg.write('Chat photo removed  ')
+        elif x['action']=='chat_photo_update':
+            histmsg.write('Chat photo updated  ') #chat_create,
+        elif x['action']=='chat_create':
+            histmsg.write('Chat created  ')
+        else:
+            histmsg.write('<UNKNOWN ACTION>')
+            warning(x)
+    #writing attachments
+    if 'attachments' in x.keys():
+        for y in x['attachments']:
+            if y['type']=='photo':
+                if 'photo_1280' in y['photo'].keys():
+                    histmsg.write(' photo '+y['photo']['photo_1280'] + '\n ')
+                elif 'photo_807' in y['photo'].keys():
+                    histmsg.write(' photo '+y['photo']['photo_807'] + '\n ')
+                elif 'photo_604' in y['photo'].keys():
+                    histmsg.write(' photo '+y['photo']['photo_604'] + '\n ')
+                elif 'photo_130' in y['photo'].keys():
+                    histmsg.write(' photo '+y['photo']['photo_130'] + '\n ')
+                elif 'photo_75' in y['photo'].keys():
+                    histmsg.write(' photo '+y['photo']['photo_75'] + '\n ')
+
+            elif y['type']=='video':
+                histmsg.write(' video '+y['video']['title'] + '\n ')
+            elif y['type']=='audio':
+                histmsg.write(' audio '+y['audio']['artist']+' - '+y['audio']['title'] +' ' +y['audio']['url']+ '\n ')
+            elif y['type']=='doc':
+                histmsg.write(' doc '+y['doc']['title'] +' '+ y['doc']['url']+ '\n ')
+            elif y['type']=='link':
+                histmsg.write(' link '+y['link']['title'] +' '+ y['link']['url']+ '\n ')
+            elif y['type']=='wall':
+                histmsg.write(' wall '+getname(y['wall']['from_id'],vk)
+                +': '+y['wall']['text']+'\n ')
+            elif y['type']=='wall_reply':
+                histmsg.write(' comment '+getname(y['wall_reply']['from_id'],vk)+
+                ': '+y['wall_reply']['text'] +'\n ')
+
+            elif y['type']=='sticker':
+                if 'photo_512' in y['sticker'].keys():
+                    histmsg.write(' sticker '+y['sticker']['photo_512'] + '\n ')
+                elif 'photo_352' in y['sticker'].keys():
+                    histmsg.write(' sticker '+y['sticker']['photo_352'] + '\n ')
+                elif 'photo_256' in y['sticker'].keys():
+                    histmsg.write(' sticker '+y['sticker']['photo_256'] + '\n ')
+                elif 'photo_128' in y['sticker'].keys():
+                    histmsg.write(' sticker '+y['sticker']['photo_128'] + '\n ')
+                elif 'photo_64' in y['sticker'].keys():
+                    histmsg.write(' sticker '+y['sticker']['photo_64'] + '\n ')
+
+            elif y['type']=='gift':
+                if 'thumb_256' in y['gift'].keys():
+                    histmsg.write(' gift '+y['gift']['thumb_256'] + '\n ')
+                elif 'thumb_96' in y['gift'].keys():
+                    histmsg.write(' gift '+y['gift']['thumb_96'] + '\n ')
+                elif 'thumb_48' in y['gift'].keys():
+                    histmsg.write(' gift '+y['gift']['thumb_48'] + '\n ')
+
+
+            else:
+                histmsg.write('<UNKNOWN TYPE>')
+                print(x)
+                warning(x)
+
+    if 'geo' in x.keys():
+        histmsg.write(' geo '+x['geo']['coordinates'] +' ')
+    #writing forwarded messages
+    if 'fwd_messages' in x.keys():
+        for y in x['fwd_messages']:
+            histmsg.write(" forwarded from "+getname(y['user_id'],vk)+" :: "+
+            datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
+            " :: "+y['body']+'\n ')
+            findattachment(y,histmsg,vk)
+
+
+
 
 #cleans from extra info and writes into the file. Returns id of last message
 def cleanup(msgs,chatid,vk):
@@ -47,52 +139,7 @@ def cleanup(msgs,chatid,vk):
         if 'chat_id' in x.keys() and x['chat_id']==chatid and '@ '+str(x['id'])+' ' not in msglog and not ';\n@' in x['body']:
             histmsg.write('@ '+str(x['id'])+' :: '+getname(x['user_id'],vk)+" :: "+
             datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'])
-            #writing action
-            if 'action' in x.keys():
-                if x['action']=='chat_kick_user':
-                    histmsg.write('Escaped this chat')
-                elif x['action']=='chat_invite_user':
-                    histmsg.write('Joined this chat')
-                elif x['action']=='chat_title_update':
-                    histmsg.write('Title updated')
-                else:
-                    histmsg.write('<UNKNOWN ACTION>')
-                    debug(x)
-            #writing attachments
-            if 'attachments' in x.keys():
-                for y in x['attachments']:
-                    if y['type']=='photo':
-                        if 'photo_1280' in y['photo'].keys():
-                            histmsg.write(' photo '+y['photo']['photo_1280'] + ' ')
-                        elif 'photo_807' in y['photo'].keys():
-                            histmsg.write(' photo '+y['photo']['photo_807'] + ' ')
-                        elif 'photo_604' in y['photo'].keys():
-                            histmsg.write(' photo '+y['photo']['photo_604'] + ' ')
-                        elif 'photo_130' in y['photo'].keys():
-                            histmsg.write(' photo '+y['photo']['photo_130'] + ' ')
-                        elif 'photo_75' in y['photo'].keys():
-                            histmsg.write(' photo '+y['photo']['photo_75'] + ' ')
-
-                    elif y['type']=='video':
-                        histmsg.write(' video '+y['video']['title'] + ' ')
-                    elif y['type']=='audio':
-                        histmsg.write(' audio '+y['audio']['artist']+y['audio']['title'] +y['audio']['url']+ ' ')
-                    elif y['type']=='doc':
-                        histmsg.write(' doc '+y['doc']['title'] +' '+ y['doc']['url']+ ' ')
-                    elif y['type']=='link':
-                        histmsg.write(' link '+y['link']['title'] +' '+ y['link']['url']+ ' ')
-                    elif y['type']=='wall':
-                        histmsg.write(' wall '+y['wall']['text'] +' ')
-                    else:
-                        histmsg.write('<UNKNOWN TYPE>')
-                        debug(x)
-            #writing forwarded messages
-            if 'fwd_messages' in x.keys():
-                for y in x['fwd_messages']:
-                    histmsg.write(" forwarded from "+getname(y['user_id'],vk_session)+" :: "+
-                    datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
-                    " :: "+y['body'])
-
+            findattachment(x,histmsg,vk)
             histmsg.write(' ;\n')
     return msgs['items'][0]['id']
 
