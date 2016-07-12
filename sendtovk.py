@@ -104,7 +104,7 @@ def main(vk,chatid):
     for x in nmsg:
         if '/quote' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
             sendcit(vk,chatid,x[0])
-        elif '/audio' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
+        elif '/music' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
             sendaudio(vk,chatid,x[0])
         elif '/gif' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
             sendgif(vk,chatid,x[0])
