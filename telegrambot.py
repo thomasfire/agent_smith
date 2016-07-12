@@ -6,10 +6,10 @@
 ### Main manager: Uliy Bee
 """
 
-import random
+from random import choice
 import re
-import fcrypto
-import getpass
+from fcrypto import gethash
+from getpass import getpass
 import tlapi as tl
 
 
@@ -77,7 +77,7 @@ def updateusers():
             users=f.read()
             f.close()
 
-            publickey=fcrypto.gethash(currmsg[3][6:71].strip())
+            publickey=gethash(currmsg[3][6:71].strip())
 
             f=open('files/tl_users.db','a')
 
@@ -238,7 +238,7 @@ def response():
 
         elif '@ '+currmsg[1].strip() in users and currmsg[0] not in maden and currmsg[3][:6]=='/quote':
             f=open('files/citations.db','r')
-            tosend=random.choice(f.read().split('\n\n'))
+            tosend=choice(f.read().split('\n\n'))
             f.close()
             tl.sendmsg(url,currmsg[1].strip(), tosend)
             f=open('files/tl_msgs.made','a')
@@ -326,6 +326,6 @@ def main(password,urltl,lastid=0):
 
 
 if __name__ == '__main__':
-    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
+    psswd=gethash(getpass(),mode='pass')
     url=tl.geturl(psswd)
     main(psswd,url)

@@ -6,11 +6,8 @@
 """
 
 import vk_api
-import datetime
-import re
-import fcrypto
-import getpass
-import logging
+from datetime import datetime
+from logging import exception,basicConfig,WARNING,debug
 
 
 def getname(user_id,vk):
@@ -49,7 +46,7 @@ def cleanup(msgs,chatid,vk):
         #checking if it is needed message
         if 'chat_id' in x.keys() and x['chat_id']==chatid and '@ '+str(x['id'])+' ' not in msglog and not ';\n@' in x['body']:
             histmsg.write('@ '+str(x['id'])+' :: '+getname(x['user_id'],vk)+" :: "+
-            datetime.datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'])
+            datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'])
             #writing action
             if 'action' in x.keys():
                 if x['action']=='chat_kick_user':
@@ -58,6 +55,9 @@ def cleanup(msgs,chatid,vk):
                     histmsg.write('Joined this chat')
                 elif x['action']=='chat_title_update':
                     histmsg.write('Title updated')
+                else:
+                    histmsg.write('<UNKNOWN ACTION>')
+                    debug(x)
             #writing attachments
             if 'attachments' in x.keys():
                 for y in x['attachments']:
@@ -83,11 +83,14 @@ def cleanup(msgs,chatid,vk):
                         histmsg.write(' link '+y['link']['title'] +' '+ y['link']['url']+ ' ')
                     elif y['type']=='wall':
                         histmsg.write(' wall '+y['wall']['text'] +' ')
+                    else:
+                        histmsg.write('<UNKNOWN TYPE>')
+                        debug(x)
             #writing forwarded messages
             if 'fwd_messages' in x.keys():
                 for y in x['fwd_messages']:
                     histmsg.write(" forwarded from "+getname(y['user_id'],vk_session)+" :: "+
-                    datetime.datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
+                    datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
                     " :: "+y['body'])
 
             histmsg.write(' ;\n')
@@ -105,11 +108,13 @@ def main(vk,chatidget,lastid=0):
                 try:
                     markasread(vk,msgid)
                 except:
-                    logging.exception('smth goes wrong at marking as read')
+                    exception('smth goes wrong at marking as read')
                 return msgid
         return lastid
+    except ConnectionResetError:
+        return lastid
     except Exception as e:
-        logging.exception('smth goes wrong at getting messages: ')
+        exception('smth goes wrong at getting messages: ')
 
 
 def captcha_handler(captcha):
@@ -118,11 +123,14 @@ def captcha_handler(captcha):
 
 
 if __name__ == '__main__':
+    from fcrypto import gethash,fdecrypt
+    from getpass import getpass
+    import re
     #configuring logs
-    logging.basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
-    level = logging.WARNING, filename = 'logs/getmsg.log')
+    basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
+    level = WARNING, filename = 'logs/getmsg.log')
     #auth
-    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
+    psswd=fcrypto.gethash(getpass(),mode='pass')
     settings=fcrypto.fdecrypt("files/vk.settings",psswd)
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
@@ -130,12 +138,12 @@ if __name__ == '__main__':
     try:
         vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
     except Exception as e:
-        logging.exception('smth goes wrong at getting vk_session:')
+        exception('smth goes wrong at getting vk_session:')
 
     #authorization
     try:
         vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
-        logging.exception(error_msg)
+        exception(error_msg)
 
     main(vk,chatidget)

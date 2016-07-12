@@ -7,18 +7,15 @@
 
 
 import vk_api
-import re
-import random
-import fcrypto
-import getpass
-import logging
+from random import choice
+from logging import exception,basicConfig,WARNING
 
 
 
 
 def sendcit(vk,chatid,num):
     f=open('files/citations.db','r')
-    msg=random.choice(f.read().split('\n\n'))
+    msg=choice(f.read().split('\n\n'))
     f.close()
     try:
         vk.messages.send(chat_id=chatid,message=msg)
@@ -26,11 +23,11 @@ def sendcit(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-        logging.exception('smth goes wrong at sending citation to vk:\n')
+        exception('smth goes wrong at sending citation to vk:\n')
 
 def sendpic(vk,chatid,num):
     f=open('files/media.db')
-    pic='photo'+random.choice(f.read().split('\n\n')[1].split()[1:-1])
+    pic='photo'+choice(f.read().split('\n\n')[1].split()[1:-1])
     f.close()
     try:
         vk.messages.send(chat_id=chatid,attachment=pic)
@@ -38,11 +35,11 @@ def sendpic(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-        logging.exception('smth goes wrong at sending picture:\n')
+        exception('smth goes wrong at sending picture:\n')
 
 def sendaudio(vk,chatid,num):
     f=open('files/media.db')
-    aud='audio'+random.choice(f.read().split('\n\n')[0].split()[1:-1])
+    aud='audio'+choice(f.read().split('\n\n')[0].split()[1:-1])
     f.close()
     try:
         vk.messages.send(chat_id=chatid,attachment=aud)
@@ -50,11 +47,11 @@ def sendaudio(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-            logging.exception('smth goes wrong at sending audio:\n')
+            exception('smth goes wrong at sending audio:\n')
 
 def sendgif(vk,chatid,num):
     f=open('files/media.db')
-    gif='doc'+random.choice(f.read().split('\n\n')[2].split()[1:-1])
+    gif='doc'+choice(f.read().split('\n\n')[2].split()[1:-1])
     f.close()
     try:
         vk.messages.send(chat_id=chatid,attachment=gif)
@@ -62,7 +59,7 @@ def sendgif(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-        logging.exception('smth goes wrong at sending gif:\n')
+        exception('smth goes wrong at sending gif:\n')
 
 def sendinfo(vk,chatid,num):
     f=open('files/info.db','r')
@@ -74,7 +71,7 @@ def sendinfo(vk,chatid,num):
         f.write(' :'+str(num)+': ')
         f.close()
     except Exception as e:
-        logging.exception('smth goes wrong at sending info:\n')
+        exception('smth goes wrong at sending info:\n')
 
 #sends messages from Telegram to vk
 def sendtl(vk, chatid):
@@ -88,7 +85,7 @@ def sendtl(vk, chatid):
         f.write('')
         f.close()
     except Exception as e:
-        logging.exception('smth goes wrong at sending messages from Telegram:\n')
+        exception('smth goes wrong at sending messages from Telegram:\n')
 
 
 
@@ -126,13 +123,16 @@ def captcha_handler(captcha):
     return captcha.try_again(key)
 
 if __name__ == '__main__':
+    from fcrypto import gethash,fdecrypt
+    from getpass import getpass
+    import re
     #configuring logs
-    logging.basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
-    level = logging.WARNING, filename = 'logs/sendtovk.log')
+    basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
+    level = WARNING, filename = 'logs/sendtovk.log')
 
     #auth
-    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
-    settings=fcrypto.fdecrypt("files/vk.settings",psswd)
+    psswd=gethash(getpass(),mode='pass')
+    settings=fdecrypt("files/vk.settings",psswd)
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
@@ -140,17 +140,17 @@ if __name__ == '__main__':
         vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
         main(vk_session,chatid)
     except Exception as e:
-        logging.exception('smth goes wrong at getting vk_session\n')
+        exception('smth goes wrong at getting vk_session\n')
 
     #authorization and getting needable tools
     try:
         vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
-        logging.exception(error_msg)
+        exception(error_msg)
 
     try:
         vk = vk_session.get_api()
     except Exception as e:
-        logging.exception('smth goes wrong at geting api\n')
+        exception('smth goes wrong at geting api\n')
 
     main(vk,chatid)

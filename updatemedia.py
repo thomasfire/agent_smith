@@ -6,10 +6,7 @@
 """
 
 import vk_api
-import re
-import fcrypto
-import getpass
-import logging
+from logging import exception,basicConfig,WARNING
 
 
 
@@ -43,7 +40,7 @@ def main(vk,album_id,user_id):
             updatepics(vk,mediafile,album_id,user_id)
             updategifs(vk,mediafile)
         except Exception as e:
-            logging.exception("smth goes wrong at updating media: \n")
+            exception("smth goes wrong at updating media: \n")
         mediafile.close()
 
 
@@ -52,12 +49,15 @@ def captcha_handler(captcha):
     return captcha.try_again(key)
 
 if __name__ == '__main__':
-    logging.basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
-    level = logging.WARNING, filename = 'logs/updatemedia.log')
+    from fcrypto import gethash,fdecrypt
+    from getpass import getpass
+    import re
+    basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
+    level = WARNING, filename = 'logs/updatemedia.log')
 
     #auth
-    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
-    settings=fcrypto.fdecrypt("files/vk.settings",psswd)
+    psswd=gethash(getpass(),mode='pass')
+    settings=fdecrypt("files/vk.settings",psswd)
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
@@ -66,17 +66,17 @@ if __name__ == '__main__':
     try:
         vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
     except Exception as e:
-        logging.exception('smth goes wrong at getting vk_session\n')
+        exception('smth goes wrong at getting vk_session\n')
     #authorization
     try:
         vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
-        logging.exception(error_msg)
+        exception(error_msg)
 
     #getting api
     try:
         vk = vk_session.get_api()
     except Exception as e:
-        logging.exception('smth goes wrong at getting vk api\n')
+        exception('smth goes wrong at getting vk api\n')
 
     main(vk,albumid,userid)
