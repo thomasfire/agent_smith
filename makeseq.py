@@ -28,8 +28,10 @@ def main():
     for x in listofmsgs:
         msg=x.split(' :: ')
         mess=True
-        for y in ['/quote','/audio','/gif','/info','/pic']:
-            if y in msg[2]:
+        if len(msg)<4:
+            continue
+        for y in ['/quote','/music','/gif','/info','/pic']:
+            if y in msg[3]:
                 mess=False
                 break
         if not mess: continue
