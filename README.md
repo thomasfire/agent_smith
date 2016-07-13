@@ -37,13 +37,11 @@ Issues:
 
 	Real:
 
-		1. Memory leak(s);
-
-		2. double semicolumn in transfered messages;
+		1. double semicolumn in transfered messages;
 
 	Possible:
 
-		1. Successful sslstrip attack if you allow http in VK;
+		1. [NOT CHECKED] Successful sslstrip attack if you allow http in VK;
 
 		2. [NOT CHECKED] sslsplit attacks;
 
@@ -63,7 +61,11 @@ Description about files and modules:
 
 	telegrambot.py - bot in Telegram, works with many files;
 
-	files:
+	tlapi.py - some often used functions for Telegram API;
+
+	files/:
+		
+		admins.db - list of admins in Telegram bot;
 
 		citations.db - list of citations to send to VK;
 
@@ -101,8 +103,19 @@ Description about files and modules:
 
 		vk.settings - [ENCRYPTED] settings of your VK bot;
 
+
 	
+	logs/:
 
-	vk_api - foreign library with Apache license for easy using VK API;
+		getmsg.log - log file for getmsg.py module, is not used in server mode;
 
-	jconfig - library that is used by vk_api;
+		logs.log -log file for runbot.py module, used in server mode;
+
+		sendtovk.log - log file for sendtovk.py modile, is not used in server mode;
+
+		updatemedia.log - log file for updatemedia.py module, is not used in server mode;
+
+
+	vk_api/ - foreign library with Apache license for easy using VK API;
+
+	jconfig/ - library that is used by vk_api;

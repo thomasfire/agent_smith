@@ -6,9 +6,10 @@
 """
 
 import vk_api
-import re
-import fcrypto
-import getpass
+from logging import exception,basicConfig,WARNING
+
+
+
 
 def updateaudio(vk,mediafile):
     audlist=vk.audio.get(need_user=1,count=0)
@@ -31,7 +32,7 @@ def updategifs(vk,mediafile):
         newgif.append(str(x['owner_id'])+'_'+str(x['id']))
     mediafile.write('doc:{ '+' '.join(newgif)+' };\n\n')
 
-def main(vk_session,album_id,user_id,vk):
+def main(vk,album_id,user_id):
 
         mediafile=open('files/media.db','w')
         try:
@@ -39,7 +40,7 @@ def main(vk_session,album_id,user_id,vk):
             updatepics(vk,mediafile,album_id,user_id)
             updategifs(vk,mediafile)
         except Exception as e:
-            print("smth goes wrong at updating media: \n",e)
+            exception("smth goes wrong at updating media: \n")
         mediafile.close()
 
 
@@ -48,9 +49,15 @@ def captcha_handler(captcha):
     return captcha.try_again(key)
 
 if __name__ == '__main__':
+    from fcrypto import gethash,fdecrypt
+    from getpass import getpass
+    import re
+    basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
+    level = WARNING, filename = 'logs/updatemedia.log')
+
     #auth
-    psswd=fcrypto.gethash(getpass.getpass(),mode='pass')
-    settings=fcrypto.fdecrypt("files/vk.settings",psswd)
+    psswd=gethash(getpass(),mode='pass')
+    settings=fdecrypt("files/vk.settings",psswd)
     login="".join(re.findall(r"login=(.+)#endlogin",settings))
     password="".join(re.findall(r"password=(.+)#endpass",settings))
     chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
@@ -59,17 +66,17 @@ if __name__ == '__main__':
     try:
         vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
     except Exception as e:
-        print('smth goes wrong at getting vk_session\n',e)
+        exception('smth goes wrong at getting vk_session\n')
     #authorization
     try:
         vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
-        print(error_msg)
-        
+        exception(error_msg)
+
     #getting api
     try:
         vk = vk_session.get_api()
     except Exception as e:
-        print('smth goes wrong at getting vk api\n',e)
+        exception('smth goes wrong at getting vk api\n')
 
-    main(vk_session,albumid,userid)
+    main(vk,albumid,userid)
