@@ -1,9 +1,10 @@
-	С вами Агент Смит v0.9testing, построенный на основе гибких методологий, ad-hoc решений и непрерывной интеграции. Testing значит нестабильный. Что-то может работать не так как хотелось бы или вообще не работать. На данный момент разработка меня находится в стадии глубокого дебага и фичэддинга. Поэтому просьба о найденых во мне багах сообщать Создателю моему Томасу Фаеру. Я умею выполнять некоторые команды и пересылать сообщения в Телеграм тем, кто не любит ВК но им приходится в нем сидеть из-за вас, дорогие людишки. Я положу этому конец-я лекарство для их времени. Также я могу присылать сообщения от пользователей Телеграм сюда, в эту жалкую конференцию.* 
+	С вами Агент Смит v1.0, построенный на основе гибких методологий, ad-hoc решений и непрерывной интеграции. Просьба о найденых во мне багах сообщать Создателю моему Томасу Фаеру. Я умею выполнять некоторые команды и пересылать сообщения в Телеграм тем, кто не любит ВК но им приходится в нем сидеть из-за вас, дорогие людишки. Я положу этому конец-я лекарство для их времени. Также я могу присылать сообщения от пользователей Телеграм сюда, в эту жалкую конференцию.* 
 UPD 0.1: существенно улучшена моя секурность:даже если украдут все мои файлы то никто кроме Создателя не получит доступ(файлы настроек надежно шифруются с длинным паролем,а в файле с ключами хранятся только надежные хэши ключей, что должны прислать пользователи мне в Телеграм).
 UPD 0.2: увеличена длина шифрования файлов в два раза, так же оптимизировано получение сообщений, благодаря чему я работаю существенно быстрее и потребляю меньше ресурсов.
 UPD 0.5: существенно увеличена моя скорость и эффективность потребления трафика;
 UPD 0.6: добавлены специальные функции для Господ Одминов;
 UPD 0.9: добавлено нормальное логгирование ошибок, всё наоптимизировано, добавлена обработка всех возможных бандеролей, исправлена отправка в Телеграм ваших команд, и самое главное-добавлена корректная обработка пересылаемых сообщений;
+UPD 1.0: успешное тестирование и закрытие уязвимостей, разработка перешла в стадию stable as a table, то есть всё протестировано и дальше будут только новые фичи;
 	Вот какие команды я смогу выполнить для вас, людишки:
 /quote - и я пришлю сюда мою случайную цитату из фильма Матрица;
 /music - и я пришлю сюда случайную аудиозапись из фиьма Матрица или родственную этим аудиозаписям;
@@ -34,12 +35,13 @@ news
 
 VK@@##@@TL
 
-I`m Agent Smith v0.9testing. I`m builded with elastic methods, ad-hoc solvings and nonstop integration. Testing is unstable, something can work incorrect or do not work. Please report @Thomas_Fire if you find a bug. I can execute some commands and send messages from VK to this chat and back. So you can do not open VK without worrying miss something imortant. But you need allowance of the @Thomas_Fire to use this bot. He will send you an token to log in and use all features. 
+I`m Agent Smith v1.0. I`m builded with elastic methods, ad-hoc solvings and nonstop integration. Please report @Thomas_Fire if you find a bug. I can execute some commands and send messages from VK to this chat and back. So you can do not open VK without worrying miss something important. But you need allowance of the @Thomas_Fire to use this bot. He will send you an token to log in and use all features. 
 UPD 0.1: Enabled security; 
 UPD 0.2: improved security; 
 UPD 0.5: improved my speed; 
 UPD 0.6: Added some functions for Admins and also added captcha handling via Telegram;
 UPD 0.9: Added logging, also optimized and added almost all types of attachments in VK, added recursive forwarded messages and fixed resending of VK comands to Telegram;
+UPD 1.0: Successful testing, now I`m stable as a table, also fixed some bugs;
 So you need first /auth <token> to log in and start receiving messages.
      There are commands I can do:
      /auth <token> - log in via <token> you have,after you log in you will be receiving all messages and your nick will be Anonymous<some numbers>, but you can change mode or nick;
