@@ -150,7 +150,7 @@ def cleanup(msgs,chatid,vk):
 
 def main(vk,chatidget,lastid=0):
 	try:
-		msgs = vk.messages.get(count=50, chat_id=chatidget,last_message_id=lastid)
+		msgs = vk.messages.get(count=100, chat_id=chatidget,last_message_id=lastid)
 	#writing to the file and marking as read
 		if msgs['items']:
 			msgid=cleanup(msgs,chatidget,vk)

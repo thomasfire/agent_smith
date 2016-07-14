@@ -11,6 +11,7 @@ import re
 from fcrypto import gethash
 from getpass import getpass
 import tlapi as tl
+import makeseq as vkmkseq
 
 
 #https://api.telegram.org/bot<token>/METHOD_NAME
@@ -309,6 +310,8 @@ def fromvktotl():
     f=open('files/msgs.sent','a')
     f.write(' '+' '.join(allmsg))
     f.close()
+    if toall:
+        vkmkseq.main()
 
 
 
@@ -316,11 +319,12 @@ def main(password,urltl,lastid=0):
     global url
     url=urltl
     offset=tl.getmsg(url,lastid)
-    updateusers()
-    makeseq()
-    response()
+    if not offset==lastid:
+        updateusers()
+        makeseq()
+        response()
+        tl.cleanup()
     fromvktotl()
-    tl.cleanup()
     return offset
 
 

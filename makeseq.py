@@ -11,7 +11,7 @@ def main():
     histmsg=open('files/msgshistory.db','r')
     f=open('files/keywords.db','r')
     keywords=f.read().split()
-    listofmsgs=histmsg.read().split(' ;\n@ ')
+    listofmsgs=histmsg.read().split(' ;\n@ ')[-100:]
     histmsg.close()
     f.close()
     impnt=[]

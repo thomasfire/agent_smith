@@ -23,7 +23,7 @@ from datetime import datetime
 basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
 level = WARNING, filename = 'logs/logs.log')
 
-lastid=0
+
 url=''
 
 def captcha_handler(captcha):
@@ -69,24 +69,29 @@ def main():
 	url=geturl(psswd)
 
 	cycles=0
-	global lastid
+	lastid=0
 	tllast=0
+	lastidnew=0
 	print('Logged in, starting bot...')
 	while True:
 		try:
 			if cycles%3==0:
 				print('.',end='')
 				stdout.flush()
-			lastid=getmsg.main(vk,chatid,lastid)
+			lastidnew=getmsg.main(vk,chatid,lastid)
 			if cycles>=500:
 				updatemedia.main(vk,albumid,userid)
 				cycles=0
 				print('\n',str(datetime.now()),':  Big cycle done!;    vklast=',lastid,';  tllast=',tllast)
-			makeseq.main()
+			if not lastid==lastidnew:
+				makeseq.main()
 			tllast=telegrambot.main(psswd,url,tllast)
-			sendtovk.main(vk,chatid)
+			sendtovk.main(vk,chatid,lastidnew-lastid)
+			lastid=lastidnew
 			clearsent()
 			cycles+=1
+		except ConnectionResetError:
+			continue
 		except Exception as exp:
 			exception("Something gone wrong in bot:\n")
 

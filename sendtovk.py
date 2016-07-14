@@ -89,31 +89,32 @@ def sendtl(vk, chatid):
 
 
 
-def main(vk,chatid):
-    f=open('files/msgshistory.db','r')
-    msgs=f.read().split(';\n@')[-10:]
-    f.close()
-    nmsg=[]
-    for x in msgs:
-        nmsg.append(x.split(' :: '))
-    f=open('files/msgs.made','r')
-    sent=f.read()
-    f.close()
+def main(vk,chatid,countofmsgs):
+    if countofmsgs>0:
+        f=open('files/msgshistory.db','r')
+        msgs=f.read().split(';\n@')[-10:]
+        f.close()
+        nmsg=[]
+        for x in msgs:
+            nmsg.append(x.split(' :: '))
+        f=open('files/msgs.made','r')
+        sent=f.read()
+        f.close()
 
-    #looking for keywords
-    for x in nmsg:
-        if '/quote' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
-            sendcit(vk,chatid,x[0])
-        elif '/music' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
-            sendaudio(vk,chatid,x[0])
-        elif '/gif' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
-            sendgif(vk,chatid,x[0])
-        elif '/info' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
-            sendinfo(vk,chatid,x[0])
-        elif '/pic' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
-            sendpic(vk,chatid,x[0])
-        else:
-            continue
+        #looking for keywords
+        for x in nmsg:
+            if '/quote' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
+                sendcit(vk,chatid,x[0])
+            elif '/music' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
+                sendaudio(vk,chatid,x[0])
+            elif '/gif' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
+                sendgif(vk,chatid,x[0])
+            elif '/info' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
+                sendinfo(vk,chatid,x[0])
+            elif '/pic' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
+                sendpic(vk,chatid,x[0])
+            else:
+                continue
 
     sendtl(vk,chatid)
 
