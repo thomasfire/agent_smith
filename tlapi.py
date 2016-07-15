@@ -65,7 +65,12 @@ def getmsg(url,offset=0):
     except Exception as e:
         exception(' A error occured while getting updates in Telegram:\n')
         return 'error'
-    return requ['result'][-1]['update_id']
+
+    if len(requ['result']):
+        return requ['result'][-1]['update_id']
+    else:
+        return 0
+    
 
 
 def kickuser(userid):
