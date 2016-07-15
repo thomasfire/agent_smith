@@ -185,6 +185,10 @@ def makeseq():
                     f=open('files/tl_msgs.made','a')
                     f.write(' '+currmsg[0])
                     f.close()
+                    for qw in users:
+                        if not qw == y:
+                            tl.sendmsg(url,qw.strip().strip(';').strip().split(' :: ')[0],'From TL`s '+curruser[1].strip()+': ' +
+                            currmsg[3].strip().replace('/msg ',' ').strip(' ;'))
 
 
 
