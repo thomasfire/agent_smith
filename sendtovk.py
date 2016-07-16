@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-#this is bot "Agent Smith beta". He chats in vk with other people
-""" Developer and Author: Thomas Fire https://github.com/thomasfire
+#this is bot "Agent Smith". He chats in vk with other people
+""" Developer and Author: Thomas Fire https://github.com/thomasfire (Telegram: @Thomas_Fire)
 ### Main manager: Uliy Bee
 """
 
@@ -12,7 +12,13 @@ from logging import exception,basicConfig,WARNING
 
 
 
-
+# next 5 functions send citation, picture, audio, gif and info_message
+# They all take similar arguments
+'''
+vk - vk_api tools. See "vk = vk_session.get_api()" at the end of this file.
+chatid - chat_id of chat, where to send all this shit
+num - id of message that is proccessing
+'''
 def sendcit(vk,chatid,num):
     f=open('files/citations.db','r')
     msg=choice(f.read().split('\n\n'))
@@ -73,7 +79,13 @@ def sendinfo(vk,chatid,num):
     except Exception as e:
         exception('smth goes wrong at sending info:\n')
 
+
+
 #sends messages from Telegram to vk
+'''
+vk - vk_api tools. See "vk = vk_session.get_api()" at the end of this file.
+chatid - chat_id where to send messages
+'''
 def sendtl(vk, chatid):
     try:
         f=open('files/tl_msgs.seq','r')
@@ -88,15 +100,24 @@ def sendtl(vk, chatid):
         exception('smth goes wrong at sending messages from Telegram:\n')
 
 
-
+'''
+vk - vk_api tools. See "vk = vk_session.get_api()" at the end of this file.
+chatid - chat_id where to send messages
+countofmsgs - count of received messages in latest update. It is useful for optimization
+'''
 def main(vk,chatid,countofmsgs):
     if countofmsgs>0:
+        # i hope you understood that next three lines is loading list of last 10 messages
         f=open('files/msgshistory.db','r')
-        msgs=f.read().split(';\n@')[-10:]
+        msgs=f.read().strip().strip(';').split(';\n@')[-10:]
         f.close()
+
         nmsg=[]
+        # splitting it into parts
         for x in msgs:
             nmsg.append(x.split(' :: '))
+
+        # getting list of sent messages
         f=open('files/msgs.made','r')
         sent=f.read()
         f.close()
@@ -105,14 +126,19 @@ def main(vk,chatid,countofmsgs):
         for x in nmsg:
             if '/quote' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
                 sendcit(vk,chatid,x[0])
+
             elif '/music' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
                 sendaudio(vk,chatid,x[0])
+
             elif '/gif' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
                 sendgif(vk,chatid,x[0])
+
             elif '/info' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
                 sendinfo(vk,chatid,x[0])
+
             elif '/pic' in x[3] and ': '+str(x[0]).strip()+': ' not in sent:
                 sendpic(vk,chatid,x[0])
+
             else:
                 continue
 
