@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #this is bot "Agent Smith beta". He chats in Telegram with people
-""" Developer and Author: Thomas Fire https://github.com/thomasfire
+""" Developer and Author: Thomas Fire https://github.com/thomasfire (Telegram: @Thomas_Fire)
 ### Main manager: Uliy Bee
 """
 
@@ -468,7 +468,7 @@ def fromvktotl():
 
 
 
-def main(password,urltl,lastid=0):
+def main(urltl,lastid=0):
     global url
     # writing url from argument to global variable 'url'
     url=urltl
