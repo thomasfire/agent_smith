@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 
-#updates list of available media(files/media.db)
-""" Developer and Author: Thomas Fire https://github.com/thomasfire
+# updates list of available media(files/media.db)
+# this module is used periadically, so bot is rather dinamic:
+# you can not to restart bot if you are updating info message or available media
+""" Developer and Author: Thomas Fire https://github.com/thomasfire  (Telegram: @Thomas_Fire)
 ### Main manager: Uliy Bee
 """
 
@@ -10,7 +12,10 @@ from logging import exception,basicConfig,WARNING
 
 
 
-
+# These three functions update available list of media, such as audio, gifs, and pictures from your page
+'''
+They all need file, opened in write mode and of course vk_api tools. See vk_api docs for detailed info
+'''
 def updateaudio(vk,mediafile):
     audlist=vk.audio.get(need_user=1,count=0)
     newaud=[]
@@ -18,6 +23,9 @@ def updateaudio(vk,mediafile):
         newaud.append(str(x['owner_id'])+'_'+str(x['id']))
     mediafile.write('audio:{ '+' '.join(newaud)+' };\n\n')
 
+'''
+This function also needs a your user_id and album_id from where to take pictures
+'''
 def updatepics(vk,mediafile,album_id,user_id):
     piclist=vk.photos.get(owner_id=user_id,album_id=album_id)
     newpic=[]
@@ -26,12 +34,18 @@ def updatepics(vk,mediafile,album_id,user_id):
     mediafile.write('photo:{ '+' '.join(newpic)+' };\n\n')
 
 def updategifs(vk,mediafile):
-    giflist=vk.docs.get(type=3)
+    giflist=vk.docs.get(type=3) # type=3 is gif
     newgif=[]
     for x in giflist['items'][1:]:
         newgif.append(str(x['owner_id'])+'_'+str(x['id']))
     mediafile.write('doc:{ '+' '.join(newgif)+' };\n\n')
 
+# it is main function,that starts updating media in correct way
+''' Takes:
+vk - vk_api tools, see 90-95 lines of this module to see what it is
+album_id - from where bot should take media list
+user_id - your id
+''' # I think it can be understood without my explanation
 def main(vk,album_id,user_id):
 
         mediafile=open('files/media.db','w')
