@@ -4,7 +4,7 @@ Retranslator of choosen chat in VK to Telegram with some extra features written 
 Some information about commands you can find in files/info.db and telegrambot.py  or after you started you can type /help into Telegram or /info into VK chat. 
 
 How to setup and configure bot:
-1. You need to install twofish lib. We included its installer into agent_smith as twofish-0.3.0.tar.gz. But you can download latest version at https://pypi.python.org/pypi/twofish. There are installation guides in both archives. 
+1. You need to install dependencies. Just run as root $ [sudo] ./install_libs.sh . It installs twofish and vk_api via pip.
 
 2. Run $ python3 fcrypto.py -setup to setup bot. It will ask you for password to encrypt settings files, chat ID of needed chat in VK, login and password from VK, album`s and your VK account`s ID. Also it requaries your bot`s token(it is given to you as you registered your bot in Telegram). https://core.telegram.org/bots/api. Album ID is album from where Smith will send photos to VK by typing /photo. After entering all needed fields files/vk.settings and files/telegram.token will be encrypted with the password.
 
