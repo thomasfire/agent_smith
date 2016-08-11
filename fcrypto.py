@@ -140,7 +140,7 @@ def main():
         f.close()
 
         # printing privatekey. You must copy it and give it to user you want to share access to bot.
-        print('Private key:'+privatekey)
+        print('Private key: '+privatekey)
     # getting publickey if you have only privatekey. This is for emergency cases such as lost of files/tokens.db
     elif len(argv)>1 and argv[1]=='-hash':
         print(gethash(input('Enter any ascii string: '),mode='token'))
