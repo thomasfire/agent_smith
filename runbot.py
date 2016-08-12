@@ -15,9 +15,11 @@ import re
 from fcrypto import gethash,fdecrypt
 from getpass import getpass
 from tlapi import geturl,getcaptcha
-from logging import exception,basicConfig,WARNING
+from logging import exception, basicConfig, WARNING
 from sys import stdout
 from datetime import datetime
+from multiprocessing import Process, Value, Array
+from time import sleep as tsleep
 
 #configuring logs
 basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
@@ -41,6 +43,48 @@ def clearsent():
 	f=open('files/msgs.sent','w')
 	f.write(' '.join(sent))
 	f.close()
+
+
+def run_vk_bot(vk, chatid, albumid, userid, state_vk_msgs, state_tl_msgs, state_msghistory):
+	cycles=0
+	lastid=0
+	lastidnew=0
+	while True:
+		try: # print point every 3rd iteration
+			if cycles%3==0:
+				print('.',end='')
+				stdout.flush()
+
+			# getting messages
+			lastidnew=getmsg.main(vk, chatid, state_msghistory,lastid)
+
+			# update list of available media every 1000th iterarion. It is about every 8-20th minute if you have non-server connection
+			if cycles>=1000:
+				updatemedia.main(vk,albumid,userid)
+				cycles=0
+				print('\n',str(datetime.now()),':  Big cycle done!;    vklast=',lastid,';')
+
+			# running retranslation to TL only if there are new messages from VK
+			if not lastid==lastidnew:
+				makeseq.main(state_msghistory, state_vk_msgs)
+
+			# updating messages in TL
+			#tllast=telegrambot.main(url,tllast)
+
+			# processing commands and retranslation_from_TL in VK
+			sendtovk.main(vk,chatid,lastidnew -lastid, state_msghistory, state_tl_msgs)
+
+			# updating last number and cleaning up logs
+			lastid=lastidnew
+			clearsent()
+
+			cycles+=1
+		except ConnectionResetError: # there are often this type of errors, but it is not my fault
+			continue
+		except Exception as exp:
+			exception("Something gone wrong in vk_bot:\n")
+
+
 
 def main():
 	# getting password
@@ -75,51 +119,34 @@ def main():
 	#getting url
 	url=geturl(psswd)
 
-	# setting counts
-	cycles=0
-	lastid=0
-	tllast=0
-	lastidnew=0
+	# init of files state
+	state_tl_msgs = Value('i', 0)
+	state_msghistory = Value('i', 0)
+	state_vk_msgs = Value('i', 0)
 
 	# starting bot
 	print('Logged in, starting bot...')
+
+	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, state_vk_msgs, state_tl_msgs, state_msghistory))
+	tl_process = Process(target=telegrambot.main, args=(url, state_vk_msgs, state_tl_msgs, state_msghistory))
+
+	print('Starting vk bot...')
+	vk_process.start()
+
+	print('Starting TL bot...')
+	tl_process.start()
+
 	while True:
-		try: # print point every 3rd iteration
-			if cycles%3==0:
-				print('.',end='')
-				stdout.flush()
-
-			# getting messages
-			lastidnew=getmsg.main(vk,chatid,lastid)
-
-			# update list of available media every 500th iterarion. It is about every 4-10th minute if you have non-server connection
-			if cycles>=500:
-				updatemedia.main(vk,albumid,userid)
-				cycles=0
-				print('\n',str(datetime.now()),':  Big cycle done!;    vklast=',lastid,';  tllast=',tllast)
-
-			# running retranslation to TL only if there are new messages from VK
-			if not lastid==lastidnew:
-				makeseq.main()
-
-			# updating messages in TL
-			tllast=telegrambot.main(url,tllast)
-
-			# processing commands and retranslation_from_TL in VK
-			sendtovk.main(vk,chatid,lastidnew-lastid)
-
-			# updating last number and cleaning up logs
-			lastid=lastidnew
-			clearsent()
-
-			cycles+=1
-		except ConnectionResetError: # there are often this type of errors, but it is not my fault
-			continue
-		except Exception as exp:
-			exception("Something gone wrong in bot:\n")
+		tempfile=open('/sys/class/thermal/thermal_zone0/temp', 'r')
+		print('Temp: ' + str(float(tempfile.read().strip())/1000) + ' C ', end='')
+		tempfile.close()
+		stdout.flush()
+		tsleep(60)
 
 
-
+	tl_process.join()
+	vk_process.join()
+	print('Exit...')
 
 
 if __name__ == '__main__':
