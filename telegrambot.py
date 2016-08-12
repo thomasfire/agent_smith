@@ -11,9 +11,12 @@ import re
 from fcrypto import gethash
 from getpass import getpass
 import tlapi as tl
-import makeseq as vkmkseq
-
-
+#import makeseq as vkmkseq
+from datetime import datetime
+from time import sleep as tsleep
+import multiio as io
+from logging import exception,basicConfig,WARNING
+from sys import stdout
 #https://api.telegram.org/bot<token>/METHOD_NAME
 
 url=''
@@ -36,6 +39,7 @@ def makedict():
 		ndict[currmsg[0].strip()] = ' : '.join(currmsg[1:]).strip()+' ;'
 
 	return ndict
+
 
 
 
@@ -65,11 +69,6 @@ def auth_user(message):
 	global url
 	global users
 
-	# loading user`s Black_List
-	#f=open('files/shitlist.db','r')
-	#shitlist=f.read().strip().split()
-	#f.close()
-
 	# allows users (except users in Black_List) to log in via 64 byte token (really it lenght is 32 byte,
 	# but it has 64 symbols in hexademical mode);
 	# Also checks if lenght of typed token is true;
@@ -88,11 +87,6 @@ def auth_user(message):
 
 		# opening TL user`s file in append mode
 		f=open('files/tl_users.db','a')
-
-		# loading how many tries people have been maden
-		#q=open('files/tl_tryes.db','r')
-		#tryusers=q.read()
-		#q.close()
 
 		# checking if hash(publickey) is in token`s list and if this user is not logged in
 		if publickey in tokens and not get_tl_user(message[1])[0]:
@@ -113,28 +107,6 @@ def auth_user(message):
 	elif publickey not in tokens and not get_tl_user(message[1])[0]:
 		# sending warning message
 		tl.sendmsg(url, message[1], 'Wrong key.')
-
-		# if it first wrong try add new user to the list, else increment number of tries
-#		if '@'+message[1]+':' not in tryusers:
-#			tryusers+=' @'+message[1]+':1'
-#		else:
-#			# loading list
-#			ntryus=tryusers.split()
-#			#cycling through users table
-#			for y in ntryus:
-#				curtry=y.strip().split(':')
-#				# if users match increment it
-#				if '@'+message[1]+':' in y:
-#					tryusers=tryusers.replace(y,
-#					curtry[0]+':'+str(int(curtry[1])+1))
-#					if int(curtry[1])>2:
-#						tl.kickuser(message[1])
-#						tryusers=tryusers.replace(y,'')
-#					break
-#		# writing new users table
-#		q=open('files/tl_tryes.db','w')
-#		q.write(tryusers)
-#	q.close()
 
 	# sending message if user already logged in or typed absolutely wrong token or user is in Black_List
 	else:
@@ -192,7 +164,7 @@ def send_users_info(message):
 
 
 #writes text and message_id(will be deleted as it sent) that will be sent to vk.
-def msg_send_to_vk(message):
+def msg_send_to_vk(message, state_tl_msgs):
 	global url
 
 	curruser, line = get_tl_user(message[1])
@@ -201,10 +173,11 @@ def msg_send_to_vk(message):
 		return
 
 	# writing sequence of messages in append mode in case if Something went wrong in VK module
-	g=open('files/tl_msgs.seq','a')
-	g.write('Not_sent_message: '+curruser[1]+': ' +
-	message[2][5:]+' ;\n')
-	g.close()
+	#g=open('files/tl_msgs.seq','a')
+	#g.write('Not_sent_message: '+curruser[1]+': ' +
+	#message[2][5:]+' ;\n')
+	#g.close()
+	io.write_shared_file('files/tl_msgs.seq','a', 'Not_sent_message: {0}: {1} ;\n'.format(curruser[1], message[2][5:]), state_tl_msgs)
 
 	# sending info message
 	tl.sendmsg(url, curruser[0], "The message will be sent soon.")
@@ -214,14 +187,15 @@ def msg_send_to_vk(message):
 
 
 # sends last N messages from VK
-def send_vk_log(message):
+def send_vk_log(message, state_msghistory):
 	global users
 
 	if get_tl_user(message[1])[0]:
 		# loading list of VK messages
-		f=open("files/msgshistory.db","r")
-		vk_messages=f.read().strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
-		f.close()
+		#f=open("files/msgshistory.db","r")
+		#vk_messages=f.read().strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
+		#f.close()
+		vk_messages=io.read_shared_file("files/msgshistory.db", state_msghistory).strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
 
 		# making more readable list of messages and deleting users IDs
 		newmsg=[]
@@ -238,9 +212,9 @@ def send_vk_log(message):
 		tl.sendmsg(url, message[1].strip(), tosend)
 
 		# marking message as proccessed
-		f=open('files/tl_msgs.made','a')
-		f.write(' '+message[0])
-		f.close()
+		#f=open('files/tl_msgs.made','a')
+		#f.write(' '+message[0])
+		#f.close()
 
 
 
@@ -305,39 +279,15 @@ def send_tl_users(message):
 	tl.sendmsg(url, message[1], '\n'.join(user_text))
 
 
-#checks for /log or /help or /quote and responses to user
-#def response():
-#    global url
-#
-#    # loading list of proccessed messages
-#    f=open('files/tl_msgs.made','r')
-#    maden=f.read()
-#    f.close()
-#
-#    # loading last messages
-#    f=open('files/tl_msgs.db','r')
-#    msgs=f.read().strip('@ ').strip(' ;').split(' ;\n@ ')[-50:]
-#    f.close()
-#
-#    # loading users table
-#    f=open('files/tl_users.db','r')
-#    users=f.read()
-#    f.close()
-#    # loading list of Odmins
-#    f=open('files/admins.db','r')
-#    odmins=f.read().strip().split()
-#    f.close()
-
-
-
 # sends messages from vk to Telegram
-def fromvktotl():
+def fromvktotl(state_vk_msgs):
 	global url
 	global users
 	# loading sequence of what to send. This sequence is generated in makeseq.py module
-	f=open('files/msgs.seq','r')
-	seq=f.read()
-	f.close()
+	seq=io.read_shared_file('files/msgs.seq', state_vk_msgs)
+	#f=open('files/msgs.seq','r')
+	#seq=f.read()
+	#f.close()
 
 	if not seq:
 		return
@@ -386,7 +336,9 @@ def fromvktotl():
 
 	# updating sequance. This is crutch because of optimization.
 	if toall:
-		vkmkseq.main()
+		f=open('files/msgs.seq','w')
+		f.write("important:{}\n\nall:{}")
+		f.close()
 
 
 # returns a list of stripped values
@@ -426,7 +378,7 @@ def update_odmins_list():
 #**************************************************************************************************
 #**************************************************************************************************
 #**************************************************************************************************
-def main(urltl,lastid=0):
+def main(urltl, state_vk_msgs, state_tl_msgs, state_msghistory):
 	global url
 	#global users
 	#global maden
@@ -435,65 +387,75 @@ def main(urltl,lastid=0):
 
 	update_users_table()
 	update_odmins_list()
+	offset=0
+	cycle=0
+	while True:
+		if cycle%3==0:
+			print(',',end='')
+			stdout.flush()
+		if cycle>=1000:
+			print('\n{0}:  1000 TL cycles!;    tllast = {1};'.format(str(datetime.now()), offset))
+			cycle=0
 
-	# getting new last message and list of messages
-	offset, messaglist = tl.getmsg(url, lastid)
+		try:
+			# getting new last message and list of messages
+			offset, messaglist = tl.getmsg(url, offset)
 
-	# if id of last message received equals to id before you updated then do nothing with messages
-	if not offset==lastid:
-		for x in messaglist:
-			# adds new user if token is correct
-			if x[2][:5]=='/auth':
-				auth_user(x)
-				update_users_table()
+			# if id of last message received equals to id before you updated then do nothing with messages
+			for x in messaglist:
+				# adds new user if token is correct
+				if x[2][:5]=='/auth':
+					auth_user(x)
+					update_users_table()
 
-			# changes user`s NickName if there is command /chname
-			elif x[2][:7]=='/chname':
-				change_users_name(x)
-				#update_users_table()
+				# changes user`s NickName if there is command /chname
+				elif x[2][:7]=='/chname':
+					change_users_name(x)
+					#update_users_table()
 
-			# changes user`s mode of recieving messages
-			elif x[2][:5]=='/mode':
-				change_users_mode(x)
-				#update_users_table()
+				# changes user`s mode of recieving messages
+				elif x[2][:5]=='/mode':
+					change_users_mode(x)
+					#update_users_table()
 
-			# sends info about user
-			elif x[2][:3]=='/me':
-				send_users_info(x)
+				# sends info about user
+				elif x[2][:3]=='/me':
+					send_users_info(x)
 
-			# send to vk
-			elif x[2][:4]=='/msg':
-				msg_send_to_vk(x)
+				# send to vk
+				elif x[2][:4]=='/msg':
+					msg_send_to_vk(x, state_tl_msgs)
 
-			# sending last N messages from VK
-			elif x[2][:4]=='/log':
-				send_vk_log(x)
+				# sending last N messages from VK
+				elif x[2][:4]=='/log':
+					send_vk_log(x, state_msghistory)
 
-			# sending help message
-			elif x[2][:5]=='/help':
-				send_help(x)
+				# sending help message
+				elif x[2][:5]=='/help':
+					send_help(x)
 
-			elif x[2][:6]=='/quote':
-				send_citation(x)
+				elif x[2][:6]=='/quote':
+					send_citation(x)
 
-			elif x[2][:6]=='/tllog':
-				send_tl_log(x)
+				elif x[2][:6]=='/tllog':
+					send_tl_log(x)
 
-			elif x[2][:8]=='/tlusers':
-				send_tl_users(x)
-			#updateusers()
-			#makeseq()
-			#response()
-			tl.cleanup()
-	# send messages from VK to Telegram
-	fromvktotl()
+				elif x[2][:8]=='/tlusers':
+					send_tl_users(x)
+
+				tl.cleanup()
+			# send messages from VK to Telegram
+			fromvktotl(state_vk_msgs)
+			cycle+=1
+		except Exception as e:
+			exception(e)
 
 	#returning ID of last messages
-	return offset
+	#return offset
 
 
 
 if __name__ == '__main__':
 	psswd=gethash(getpass(),mode='pass')
 	url=tl.geturl(psswd)
-	main(psswd,url)
+	main(url)
