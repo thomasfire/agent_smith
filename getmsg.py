@@ -8,6 +8,7 @@
 import vk_api
 from datetime import datetime
 from logging import exception,basicConfig,WARNING,warning
+import multiio as io
 
 
 # returns '<first_name> <last_name>' associated with user_id
@@ -181,12 +182,15 @@ def findattachment(x,histmsg,vk):
 
 # cleans from extra info and writes into the file. Returns id of last message
 # needs list of received messages, chat_id and vk_api
-def cleanup(msgs,chatid,vk):
+def cleanup(msgs, chatid, vk, state_msghistory):
+	#io.wait_freedom_and_lock(state_msghistory)
 	# loading list of messages
-	histmsg=open('files/msgshistory.db','r')
-	msglog=histmsg.read()
-	histmsg.close()
+	#histmsg=open('files/msgshistory.db','r')
+	#msglog=histmsg.read()
+	#histmsg.close()
+	msglog=io.read_shared_file('files/msgshistory.db', state_msghistory)
 	# opening file in append mode
+	io.wait_freedom_and_lock(state_msghistory)
 	histmsg=open('files/msgshistory.db','a')
 
 	#writing the messages to the file
@@ -200,17 +204,19 @@ def cleanup(msgs,chatid,vk):
 			# writing it
 			histmsg.write(' ;\n')
 	# returning ID of last message
+
+	io.unlock(state_msghistory)
 	return msgs['items'][0]['id']
 
 
 
-def main(vk,chatidget,lastid=0):
+def main(vk,chatidget, state_msghistory,lastid=0):
 	try:
 		# getting messages. See vk_api docs
 		msgs = vk.messages.get(count=200, chat_id=chatidget,last_message_id=lastid)
 	# writing to the file and marking as read
 		if msgs['items']:
-			msgid=cleanup(msgs,chatidget,vk)
+			msgid=cleanup(msgs, chatidget, vk, state_msghistory)
 			if msgid:
 				try:
 					markasread(vk,msgid)
@@ -223,7 +229,7 @@ def main(vk,chatidget,lastid=0):
 	except Exception as e:
 		exception('smth goes wrong at getting messages: ')
 
-# handling captcha bia Terminal
+# handling captcha мia Terminal
 def captcha_handler(captcha):
 	key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
 	return captcha.try_again(key)
