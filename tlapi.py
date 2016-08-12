@@ -128,14 +128,14 @@ def cleanup():
 		f.close()
 
 	# loading list of maden messages
-	f=open('files/tl_msgs.made','r')
-	listofmsgs=f.read().split()
-	f.close()
+	#f=open('files/tl_msgs.made','r')
+	#listofmsgs=f.read().split()
+	#f.close()
 	# writing last 100 maden messages if there are more than 1000 maden messages
-	if len(listofmsgs)>1000:
-		f=open('files/tl_msgs.made','w')
-		f.write(' '.join(listofmsgs[-100:]))
-		f.close()
+	#if len(listofmsgs)>1000:
+	#	f=open('files/tl_msgs.made','w')
+	#	f.write(' '.join(listofmsgs[-100:]))
+	#	f.close()
 
 
 
