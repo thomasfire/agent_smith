@@ -12,6 +12,14 @@ from logging import exception,basicConfig,WARNING
 
 
 
+
+
+##################     UPDATING MEDIA FUNCTIONS       ########################################
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
 # These three functions update available list of media, such as audio, gifs, and pictures from your page
 '''
 They all need file, opened in write mode and of course vk_api tools. See vk_api docs for detailed info
@@ -23,6 +31,11 @@ def updateaudio(vk,mediafile):
 		newaud.append(str(x['owner_id'])+'_'+str(x['id']))
 	mediafile.write('audio:{ '+' '.join(newaud)+' };\n\n')
 
+
+
+
+
+
 '''
 This function also needs a your user_id and album_id from where to take pictures
 '''
@@ -33,12 +46,22 @@ def updatepics(vk,mediafile,album_id,user_id):
 		newpic.append(str(x['owner_id'])+'_'+str(x['id']))
 	mediafile.write('photo:{ '+' '.join(newpic)+' };\n\n')
 
+
+
+
+
+
 def updategifs(vk,mediafile):
 	giflist=vk.docs.get(type=3) # type=3 is gif
 	newgif=[]
 	for x in giflist['items'][1:]:
 		newgif.append(str(x['owner_id'])+'_'+str(x['id']))
 	mediafile.write('doc:{ '+' '.join(newgif)+' };\n\n')
+
+
+
+
+
 
 # it is main function,that starts updating media in correct way
 ''' Takes:
@@ -58,9 +81,20 @@ def main(vk,album_id,user_id):
 		mediafile.close()
 
 
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
+
+
 def captcha_handler(captcha):
 	key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
 	return captcha.try_again(key)
+
+
+
+
 
 if __name__ == '__main__':
 	from fcrypto import gethash,fdecrypt
