@@ -13,6 +13,13 @@ import multiio as io
 
 
 
+
+##################     SEND FUN GIFS, PICS, CITES AND ETC      ###############################
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
 # next 5 functions send citation, picture, audio, gif and info_message
 # They all take similar arguments
 '''
@@ -32,6 +39,10 @@ def sendcit(vk,chatid,num):
 	except Exception as e:
 		exception('smth goes wrong at sending citation to vk:\n')
 
+
+
+
+
 def sendpic(vk,chatid,num):
 	f=open('files/media.db')
 	pic='photo'+choice(f.read().split('\n\n')[1].split()[1:-1])
@@ -43,6 +54,10 @@ def sendpic(vk,chatid,num):
 		f.close()
 	except Exception as e:
 		exception('smth goes wrong at sending picture:\n')
+
+
+
+
 
 def sendaudio(vk,chatid,num):
 	f=open('files/media.db')
@@ -56,6 +71,10 @@ def sendaudio(vk,chatid,num):
 	except Exception as e:
 			exception('smth goes wrong at sending audio:\n')
 
+
+
+
+
 def sendgif(vk,chatid,num):
 	f=open('files/media.db')
 	gif='doc'+choice(f.read().split('\n\n')[2].split()[1:-1])
@@ -67,6 +86,10 @@ def sendgif(vk,chatid,num):
 		f.close()
 	except Exception as e:
 		exception('smth goes wrong at sending gif:\n')
+
+
+
+
 
 def sendinfo(vk,chatid,num):
 	f=open('files/info.db','r')
@@ -82,6 +105,14 @@ def sendinfo(vk,chatid,num):
 
 
 
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
+
+
+
 #sends messages from Telegram to vk
 '''
 vk - vk_api tools. See "vk = vk_session.get_api()" at the end of this file.
@@ -89,19 +120,25 @@ chatid - chat_id where to send messages
 '''
 def sendtl(vk, chatid, state_tl_msgs):
 	try:
-		#f=open('files/tl_msgs.seq','r')
-		#msgs=f.read().replace('Not_sent_message: ','')
-		#f.close()
 		msgs = io.read_shared_file('files/tl_msgs.seq', state_tl_msgs).replace('Not_sent_message: ','')
 		if msgs:
 			vk.messages.send(chat_id=chatid,message=msgs)
 
 		io.write_shared_file('files/tl_msgs.seq', 'w', '', state_tl_msgs)
-		#f=open('files/tl_msgs.seq','w')
-		#f.write('')
-		#f.close()
 	except Exception as e:
 		exception('smth goes wrong at sending messages from Telegram:\n')
+
+
+
+
+
+
+
+#############################        MAIN         #################################################
+#*************************************************************************************************#
+#*************************************************************************************************#
+#*************************************************************************************************#
+#*************************************************************************************************#
 
 
 '''
@@ -111,12 +148,7 @@ countofmsgs - count of received messages in latest update. It is useful for opti
 '''
 def main(vk, chatid, countofmsgs, state_msghistory, state_tl_msgs):
 	if countofmsgs>0:
-		# i hope you understood that next three lines is loading list of last 10 messages
-		#f=open('files/msgshistory.db','r')
-		#msgs=f.read().strip().strip(';').split(';\n@')[-10:]
-		#f.close()
 		msgs=io.read_shared_file('files/msgshistory.db', state_msghistory).strip().strip(';').split(';\n@')[-10:]
-
 		nmsg=[]
 		# splitting it into parts
 		for x in msgs:
@@ -150,9 +182,18 @@ def main(vk, chatid, countofmsgs, state_msghistory, state_tl_msgs):
 	sendtl(vk, chatid, state_tl_msgs)
 
 
+
+
+
+
+
 def captcha_handler(captcha):
 	key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
 	return captcha.try_again(key)
+
+
+
+
 
 if __name__ == '__main__':
 	from fcrypto import gethash,fdecrypt
