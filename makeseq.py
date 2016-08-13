@@ -9,14 +9,15 @@
 from re import findall
 import multiio as io
 
+
+
+
+
 def main(state_msghistory, state_vk_msgs):
-	# loading list of messages and list of keywords
 	listofmsgs=io.read_shared_file('files/msgshistory.db', state_msghistory).split(' ;\n@ ')[-200:]
-	#histmsg=open('files/msgshistory.db','r')
+
 	f=open('files/keywords.db','r')
 	keywords=f.read().split()
-	#listofmsgs=histmsg.read().split(' ;\n@ ')[-200:]
-	#histmsg.close()
 	f.close()
 
 	impnt=[]
@@ -30,10 +31,6 @@ def main(state_msghistory, state_vk_msgs):
 	f=open('files/msgs.sent','r')
 	sent=f.read().split()
 	f.close
-
-	# opening sequnce file
-	#io.wait_freedom_and_lock(state_vk_msgs)
-	#f=open('files/msgs.seq','w')
 
 	# cycling through messages
 	for x in listofmsgs:
@@ -58,15 +55,13 @@ def main(state_msghistory, state_vk_msgs):
 					break
 	# writing sequances
 	io.write_shared_file('files/msgs.seq','w', "important:{"+" ".join(impnt)+"}\n\n" +"all:{"+" ".join(allmsg)+"}", state_vk_msgs)
-	#f.write("important:{"+" ".join(impnt)+"}\n\n" +"all:{"+" ".join(allmsg)+"}")
-	#f.close()
-	#io.unlock(state_vk_msgs)
 	# cleaning up messages
 	if len(listofmsgs)>1000:
 		io.write_shared_file('files/msgshistory.db','w','@ '+' ;\n@ '.join(listofmsgs[-100:]), state_msghistory)
-		#f=open('files/msgshistory.db','w')
-		#f.write('@ '+' ;\n@ '.join(listofmsgs[-100:]))
-		#f.close()
+
+
+
+
 
 if __name__ == '__main__':
 	main()
