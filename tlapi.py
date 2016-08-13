@@ -13,6 +13,9 @@ from logging import exception,basicConfig,WARNING
 from urllib.parse import quote, urlsplit, urlunsplit
 
 
+
+
+
 # returns a list of stripped values
 def strip_list(somelist):
 	newlist=[]
@@ -24,11 +27,18 @@ def strip_list(somelist):
 	return newlist
 
 
+
+
+
 #url of api Telegram. Takes password,that is used in encrypting settings. Without password you cannot do anything
 def geturl(password):
 	url=('https://api.telegram.org/bot'+
 	fdecrypt('files/telegram.token',password).split()[0].replace('token=','').replace(';','')+'/')
 	return url
+
+
+
+
 
 
 #sends a message to Telegram.
@@ -50,6 +60,8 @@ def sendmsg(url,chatid,text):
 
 	# sometimes it is useful, not in my case
 	return str(requ)
+
+
 
 
 
@@ -107,11 +119,6 @@ def getmsg(url,offset=0):
 		return 0, []
 
 
-# writes user to Black_List. I think it is understoodable without my commentary
-def kickuser(userid):
-	f=open('files/shitlist.db','a')
-	f.write(' '+str(userid))
-	f.close()
 
 
 
@@ -127,15 +134,8 @@ def cleanup():
 		f.write('@ '+' ;\n@ '.join(listofmsgs[-100:]))
 		f.close()
 
-	# loading list of maden messages
-	#f=open('files/tl_msgs.made','r')
-	#listofmsgs=f.read().split()
-	#f.close()
-	# writing last 100 maden messages if there are more than 1000 maden messages
-	#if len(listofmsgs)>1000:
-	#	f=open('files/tl_msgs.made','w')
-	#	f.write(' '.join(listofmsgs[-100:]))
-	#	f.close()
+
+
 
 
 
