@@ -21,9 +21,13 @@ from datetime import datetime
 from multiprocessing import Process, Value, Array
 from time import sleep as tsleep
 
+
 #configuring logs
 basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
 level = WARNING, filename = 'logs/logs.log')
+
+
+
 
 
 # handling captcha via Telegram. See vk_api docs for detailed info
@@ -31,6 +35,9 @@ def captcha_handler(captcha):
 	global lastid
 	key = getcaptcha(url,captcha.get_url().strip(),lastid).strip(';').strip()
 	return captcha.try_again(key)
+
+
+
 
 # cleans up files/msgs.sent
 def clearsent():
@@ -43,6 +50,10 @@ def clearsent():
 	f=open('files/msgs.sent','w')
 	f.write(' '.join(sent))
 	f.close()
+
+
+
+
 
 
 def run_vk_bot(vk, chatid, albumid, userid, state_vk_msgs, state_tl_msgs, state_msghistory):
@@ -68,9 +79,6 @@ def run_vk_bot(vk, chatid, albumid, userid, state_vk_msgs, state_tl_msgs, state_
 			if not lastid==lastidnew:
 				makeseq.main(state_msghistory, state_vk_msgs)
 
-			# updating messages in TL
-			#tllast=telegrambot.main(url,tllast)
-
 			# processing commands and retranslation_from_TL in VK
 			sendtovk.main(vk,chatid,lastidnew -lastid, state_msghistory, state_tl_msgs)
 
@@ -83,6 +91,9 @@ def run_vk_bot(vk, chatid, albumid, userid, state_vk_msgs, state_tl_msgs, state_
 			continue
 		except Exception as exp:
 			exception("Something gone wrong in vk_bot:\n")
+
+
+
 
 
 
@@ -147,6 +158,9 @@ def main():
 	tl_process.join()
 	vk_process.join()
 	print('Exit...')
+
+
+
 
 
 if __name__ == '__main__':
