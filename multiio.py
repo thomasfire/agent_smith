@@ -1,8 +1,17 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+
+""" Developer and Author: Thomas Fire https://github.com/thomasfire (Telegram: @Thomas_Fire)
+### Main manager: Uliy Bee
+"""
+
 from time import sleep as tsleep
-#import inspect
+
+#import inspect   ##uncomment comment lines if you want to debug
 # multi IN_OUT module.
+
+
+
 
 def write_shared_file(filename, mode, data, state):
 	#print("Write {}".format(inspect.stack()[1][3]))
@@ -12,6 +21,9 @@ def write_shared_file(filename, mode, data, state):
 	f.write(data)
 	f.close
 	unlock(state)
+
+
+
 
 
 def read_shared_file(filename, state):
@@ -25,11 +37,18 @@ def read_shared_file(filename, state):
 	return data
 
 
+
+
+
 def wait_freedom_and_lock(state):
 	#print("Lock {}".format(inspect.stack()[1][3]))
 	while state.value:
 		tsleep(0.0001)
 	state.value=1
+
+
+
+
 
 def unlock(state):
 	#print("Unlock {}".format(inspect.stack()[1][3]))
