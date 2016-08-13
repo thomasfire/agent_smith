@@ -13,8 +13,8 @@ import multiio as io
 
 
 
-def main(state_msghistory, state_vk_msgs):
-	listofmsgs=io.read_shared_file('files/msgshistory.db', state_msghistory).split(' ;\n@ ')[-200:]
+def main(msghistory, vk_msgs, sent_msgs):
+	listofmsgs=msghistory.read().split(' ;\n@ ')[-200:]
 
 	f=open('files/keywords.db','r')
 	keywords=f.read().split()
@@ -28,9 +28,7 @@ def main(state_msghistory, state_vk_msgs):
 		listofmsgs[x]=listofmsgs[x].strip('@ ').strip(' ;')
 
 	# loading sent messages
-	f=open('files/msgs.sent','r')
-	sent=f.read().split()
-	f.close
+	sent = sent_msgs.read().split()
 
 	# cycling through messages
 	for x in listofmsgs:
@@ -54,10 +52,10 @@ def main(state_msghistory, state_vk_msgs):
 					impnt.append(msg[0].strip())
 					break
 	# writing sequances
-	io.write_shared_file('files/msgs.seq','w', "important:{"+" ".join(impnt)+"}\n\n" +"all:{"+" ".join(allmsg)+"}", state_vk_msgs)
+	vk_msgs.write('w', "important:{"+" ".join(impnt)+"}\n\n" +"all:{"+" ".join(allmsg)+"}")
 	# cleaning up messages
 	if len(listofmsgs)>1000:
-		io.write_shared_file('files/msgshistory.db','w','@ '+' ;\n@ '.join(listofmsgs[-100:]), state_msghistory)
+		msghistory.write('w', '@ '+' ;\n@ '.join(listofmsgs[-100:]))
 
 
 

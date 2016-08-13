@@ -234,14 +234,15 @@ def send_users_info(message):
 
 
 ###############      THESE FUNCTIONS ARE ASSOCIATED WITH VK      #############################
-#********************************************************************************************#
-#********************************************************************************************#
-#********************************************************************************************#
-
+#*****************  ****************  ******  *****  ****************************************#
+#*******************  ************  ********  ***  ******************************************#
+#*********************  *******  ***********  *  ********************************************#
+#***********************  ***  *************  ***  ******************************************#
+#************************    ***************  *****  ****************************************#
 
 
 #writes text and message_id(will be deleted as it sent) that will be sent to vk.
-def msg_send_to_vk(message, state_tl_msgs):
+def msg_send_to_vk(message, tl_msgs):
 	global url
 
 	curruser, line = get_tl_user(message[1])
@@ -249,8 +250,8 @@ def msg_send_to_vk(message, state_tl_msgs):
 	if not curruser:
 		return
 
-	io.write_shared_file('files/tl_msgs.seq','a', 'Not_sent_message: {0}: {1} ;\n'.format(curruser[1], message[2][5:]), state_tl_msgs)
-
+	tl_msgs.write('a', '{0}: {1} ;\n'.format(curruser[1], message[2][5:]))
+	
 	# sending info message
 	tl.sendmsg(url, curruser[0], "The message will be sent soon.")
 	for qw in users:
@@ -262,12 +263,12 @@ def msg_send_to_vk(message, state_tl_msgs):
 
 
 # sends last N messages from VK
-def send_vk_log(message, state_msghistory):
+def send_vk_log(message, msghistory):
 	global users
 
 	if get_tl_user(message[1])[0]:
 		# loading list of VK messages
-		vk_messages=io.read_shared_file("files/msgshistory.db", state_msghistory).strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
+		vk_messages=msghistory.read().strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
 
 		# making more readable list of messages and deleting users IDs
 		newmsg=[]
@@ -288,8 +289,6 @@ def send_vk_log(message, state_msghistory):
 #********************************************************************************************#
 #********************************************************************************************#
 #********************************************************************************************#
-
-
 
 
 
@@ -408,12 +407,11 @@ def send_tl_users(message):
 
 
 # sends messages from vk to Telegram
-def fromvktotl(state_vk_msgs):
+def fromvktotl(vk_msgs, sent_msgs):
 	global url
 	global users
 	# loading sequence of what to send. This sequence is generated in makeseq.py module
-	seq=io.read_shared_file('files/msgs.seq', state_vk_msgs)
-
+	seq = vk_msgs.read()
 	if not seq:
 		return
 
@@ -455,15 +453,10 @@ def fromvktotl(state_vk_msgs):
 				tl.sendmsg(url, userid, toall)
 
 	# marking messages as sent
-	f=open('files/msgs.sent','a')
-	f.write(' '+' '.join(allmsg))
-	f.close()
-
+	sent_msgs.write('a', ' '+' '.join(allmsg))
 	# updating sequance.
 	if toall:
-		f=open('files/msgs.seq','w')
-		f.write("important:{}\n\nall:{}")
-		f.close()
+		vk_msgs.write('w', "important:{}\n\nall:{}")
 
 
 
@@ -485,7 +478,7 @@ def fromvktotl(state_vk_msgs):
 #*************************************************************************************************#
 #*************************************************************************************************#
 #*************************************************************************************************#
-def main(urltl, state_vk_msgs, state_tl_msgs, state_msghistory):
+def main(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs):
 	global url
 	url=urltl
 
@@ -518,9 +511,9 @@ def main(urltl, state_vk_msgs, state_tl_msgs, state_msghistory):
 				elif x[2][:3]=='/me':
 					send_users_info(x)
 				elif x[2][:4]=='/msg':
-					msg_send_to_vk(x, state_tl_msgs)
+					msg_send_to_vk(x, tl_msgs)
 				elif x[2][:4]=='/log':
-					send_vk_log(x, state_msghistory)
+					send_vk_log(x, msghistory)
 				elif x[2][:5]=='/help':
 					send_help(x)
 				elif x[2][:6]=='/quote':
@@ -532,7 +525,7 @@ def main(urltl, state_vk_msgs, state_tl_msgs, state_msghistory):
 
 			tl.cleanup()
 			# send messages from VK to Telegram
-			fromvktotl(state_vk_msgs)
+			fromvktotl(vk_msgs, sent_msgs)
 			cycle+=1
 		except Exception as e:
 			exception(e)

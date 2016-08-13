@@ -193,11 +193,11 @@ def findattachment(x,histmsg,vk):
 
 # cleans from extra info and writes into the file. Returns id of last message
 # needs list of received messages, chat_id and vk_api
-def cleanup(msgs, chatid, vk, state_msghistory):
-	msglog=io.read_shared_file('files/msgshistory.db', state_msghistory)
+def cleanup(msgs, chatid, vk, msghistory):
+	msglog=msghistory.read()
 
 	# opening file in append mode
-	io.wait_freedom_and_lock(state_msghistory)
+	msghistory.wait_freedom_and_lock()
 	histmsg=open('files/msgshistory.db','a')
 
 	#writing the messages to the file
@@ -212,7 +212,7 @@ def cleanup(msgs, chatid, vk, state_msghistory):
 			histmsg.write(' ;\n')
 	# returning ID of last message
 
-	io.unlock(state_msghistory)
+	msghistory.unlock()
 	return msgs['items'][0]['id']
 
 
@@ -220,13 +220,13 @@ def cleanup(msgs, chatid, vk, state_msghistory):
 
 
 
-def main(vk,chatidget, state_msghistory,lastid=0):
+def main(vk, chatidget, msghistory, lastid=0):
 	try:
 		# getting messages. See vk_api docs
-		msgs = vk.messages.get(count=200, chat_id=chatidget,last_message_id=lastid)
+		msgs = vk.messages.get(count=200, chat_id=chatidget, last_message_id=lastid)
 	# writing to the file and marking as read
 		if msgs['items']:
-			msgid=cleanup(msgs, chatidget, vk, state_msghistory)
+			msgid=cleanup(msgs, chatidget, vk, msghistory)
 			if msgid:
 				try:
 					markasread(vk,msgid)

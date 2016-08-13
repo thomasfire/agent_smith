@@ -20,7 +20,7 @@ from sys import stdout
 from datetime import datetime
 from multiprocessing import Process, Value, Array
 from time import sleep as tsleep
-
+import multiio as io
 
 #configuring logs
 basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
@@ -40,23 +40,16 @@ def captcha_handler(captcha):
 
 
 # cleans up files/msgs.sent
-def clearsent():
-	# loading and splitting it
-	f=open('files/msgs.sent','r')
-	sent=f.read().split()
-	f.close()
-
-	#joining and writing it
-	f=open('files/msgs.sent','w')
-	f.write(' '.join(sent))
-	f.close()
+def clearsent(sent_msgs):
+	sent = sent_msgs.read().split()
+	sent_msgs.write('w', ' '.join(sent))
 
 
 
 
 
 
-def run_vk_bot(vk, chatid, albumid, userid, state_vk_msgs, state_tl_msgs, state_msghistory):
+def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs):
 	cycles=0
 	lastid=0
 	lastidnew=0
@@ -67,24 +60,24 @@ def run_vk_bot(vk, chatid, albumid, userid, state_vk_msgs, state_tl_msgs, state_
 				stdout.flush()
 
 			# getting messages
-			lastidnew=getmsg.main(vk, chatid, state_msghistory,lastid)
+			lastidnew=getmsg.main(vk, chatid, msghistory, lastid)
 
 			# update list of available media every 1000th iterarion. It is about every 8-20th minute if you have non-server connection
 			if cycles>=1000:
-				updatemedia.main(vk,albumid,userid)
+				clearsent()
+				updatemedia.main(vk, albumid, userid)
 				cycles=0
 				print('\n',str(datetime.now()),':  Big cycle done!;    vklast=',lastid,';')
 
 			# running retranslation to TL only if there are new messages from VK
 			if not lastid==lastidnew:
-				makeseq.main(state_msghistory, state_vk_msgs)
+				makeseq.main(msghistory, vk_msgs, sent_msgs)
 
 			# processing commands and retranslation_from_TL in VK
-			sendtovk.main(vk,chatid,lastidnew -lastid, state_msghistory, state_tl_msgs)
+			sendtovk.main(vk,chatid,lastidnew -lastid, msghistory, tl_msgs)
 
 			# updating last number and cleaning up logs
 			lastid=lastidnew
-			clearsent()
 
 			cycles+=1
 		except ConnectionResetError: # there are often this type of errors, but it is not my fault
@@ -131,15 +124,20 @@ def main():
 	url=geturl(psswd)
 
 	# init of files state
-	state_tl_msgs = Value('i', 0)
-	state_msghistory = Value('i', 0)
-	state_vk_msgs = Value('i', 0)
+	#state_tl_msgs = Value('i', 0)
+	#state_msghistory = Value('i', 0)
+	#state_vk_msgs = Value('i', 0)
+
+	tl_msgs = io.SharedFile('files/tl_msgs.seq')
+	msghistory = io.SharedFile('files/msgshistory.db')
+	vk_msgs = io.SharedFile('files/msgs.seq')
+	sent_msgs = io.SharedFile('files/msgs.sent')
 
 	# starting bot
 	print('Logged in, starting bot...')
 
-	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, state_vk_msgs, state_tl_msgs, state_msghistory))
-	tl_process = Process(target=telegrambot.main, args=(url, state_vk_msgs, state_tl_msgs, state_msghistory))
+	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs))
+	tl_process = Process(target=telegrambot.main, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs))
 
 	print('Starting vk bot...')
 	vk_process.start()

@@ -118,13 +118,13 @@ def sendinfo(vk,chatid,num):
 vk - vk_api tools. See "vk = vk_session.get_api()" at the end of this file.
 chatid - chat_id where to send messages
 '''
-def sendtl(vk, chatid, state_tl_msgs):
+def sendtl(vk, chatid, tl_msgs):
 	try:
-		msgs = io.read_shared_file('files/tl_msgs.seq', state_tl_msgs).replace('Not_sent_message: ','')
+		msgs = tl_msgs.read()
 		if msgs:
-			vk.messages.send(chat_id=chatid,message=msgs)
+			vk.messages.send(chat_id=chatid, message=msgs)
 
-		io.write_shared_file('files/tl_msgs.seq', 'w', '', state_tl_msgs)
+		tl_msgs.write('w', '')
 	except Exception as e:
 		exception('smth goes wrong at sending messages from Telegram:\n')
 
@@ -146,9 +146,9 @@ vk - vk_api tools. See "vk = vk_session.get_api()" at the end of this file.
 chatid - chat_id where to send messages
 countofmsgs - count of received messages in latest update. It is useful for optimization
 '''
-def main(vk, chatid, countofmsgs, state_msghistory, state_tl_msgs):
+def main(vk, chatid, countofmsgs, msghistory, tl_msgs):
 	if countofmsgs>0:
-		msgs=io.read_shared_file('files/msgshistory.db', state_msghistory).strip().strip(';').split(';\n@')[-10:]
+		msgs=msghistory.read().strip().strip(';').split(';\n@')[-10:]
 		nmsg=[]
 		# splitting it into parts
 		for x in msgs:
@@ -156,7 +156,7 @@ def main(vk, chatid, countofmsgs, state_msghistory, state_tl_msgs):
 
 		# getting list of sent messages
 		f=open('files/msgs.made','r')
-		sent=f.read()
+		sent = f.read()
 		f.close()
 
 		#looking for keywords
@@ -179,7 +179,7 @@ def main(vk, chatid, countofmsgs, state_msghistory, state_tl_msgs):
 			else:
 				continue
 
-	sendtl(vk, chatid, state_tl_msgs)
+	sendtl(vk, chatid, tl_msgs)
 
 
 

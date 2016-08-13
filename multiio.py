@@ -6,51 +6,49 @@
 """
 
 from time import sleep as tsleep
+from multiprocessing import Event
 
-#import inspect   ##uncomment comment lines if you want to debug
 # multi IN_OUT module.
 
 
 
+"""Class, that safely works with files, that are used in many processes.
+ Takes filename and link to multiprocessing.Value.
+ Creates new event."""
+class SharedFile(object):
 
-def write_shared_file(filename, mode, data, state):
-	#print("Write {}".format(inspect.stack()[1][3]))
-	wait_freedom_and_lock(state)
+	def __init__(self, filename):
+		self.filename = filename
+		self.fevent = Event()
 
-	f=open(filename, mode)
-	f.write(data)
-	f.close
-	unlock(state)
-
-
-
+		self.fevent.set()
 
 
-def read_shared_file(filename, state):
-	#print("Read {}".format(inspect.stack()[1][3]))
-	wait_freedom_and_lock(state)
+	def write(self, mode, data):
+		self.wait_freedom_and_lock()
 
-	f=open(filename, 'r')
-	data=f.read()
-	f.close
-	unlock(state)
-	return data
+		f=open(self.filename, mode)
+		f.write(data)
+		f.close
+		self.unlock()
 
 
 
+	def read(self):
+		self.wait_freedom_and_lock()
+
+		f=open(self.filename, 'r')
+		data=f.read()
+		f.close
+		self.unlock()
+		return data
 
 
-def wait_freedom_and_lock(state):
-	#print("Lock {}".format(inspect.stack()[1][3]))
-	while state.value:
-		tsleep(0.0001)
-	state.value=1
+	def wait_freedom_and_lock(self):
+		self.fevent.wait()
+		self.fevent.clear()
 
 
-
-
-
-def unlock(state):
-	#print("Unlock {}".format(inspect.stack()[1][3]))
-	state.value=0
-	tsleep(0.001)
+	def unlock(self):
+		self.fevent.set()
+		tsleep(0.001)
