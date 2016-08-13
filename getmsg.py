@@ -11,6 +11,9 @@ from logging import exception,basicConfig,WARNING,warning
 import multiio as io
 
 
+
+
+
 # returns '<first_name> <last_name>' associated with user_id
 def getname(user_id,vk):
 	if int(user_id)<0:
@@ -38,9 +41,15 @@ def getname(user_id,vk):
 
 		return " ".join([name[0]['first_name'],name[0]['last_name']])
 
+
+
+
 # marks messages as read via vk_api and id of last message
 def markasread(vk,msgid):
 	vk.messages.markAsRead(message_ids=msgid,start_message_id=msgid)
+
+
+
 
 
 
@@ -180,15 +189,13 @@ def findattachment(x,histmsg,vk):
 
 
 
+
+
 # cleans from extra info and writes into the file. Returns id of last message
 # needs list of received messages, chat_id and vk_api
 def cleanup(msgs, chatid, vk, state_msghistory):
-	#io.wait_freedom_and_lock(state_msghistory)
-	# loading list of messages
-	#histmsg=open('files/msgshistory.db','r')
-	#msglog=histmsg.read()
-	#histmsg.close()
 	msglog=io.read_shared_file('files/msgshistory.db', state_msghistory)
+
 	# opening file in append mode
 	io.wait_freedom_and_lock(state_msghistory)
 	histmsg=open('files/msgshistory.db','a')
@@ -207,6 +214,9 @@ def cleanup(msgs, chatid, vk, state_msghistory):
 
 	io.unlock(state_msghistory)
 	return msgs['items'][0]['id']
+
+
+
 
 
 
@@ -229,10 +239,17 @@ def main(vk,chatidget, state_msghistory,lastid=0):
 	except Exception as e:
 		exception('smth goes wrong at getting messages: ')
 
+
+
+
 # handling captcha мia Terminal
 def captcha_handler(captcha):
 	key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
 	return captcha.try_again(key)
+
+
+
+
 
 
 if __name__ == '__main__':
