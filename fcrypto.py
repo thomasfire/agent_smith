@@ -13,6 +13,10 @@ from sys import argv
 from getpass import getpass
 from os import urandom
 
+
+
+
+
 #returns secure hash
 '''
 smstr is string you wanna to take hash
@@ -38,6 +42,11 @@ def gethash(smstr, mode='token'):
 			nhash=sha512(salt.encode('ascii')+nhash.encode('ascii')).hexdigest()
 		return sha512(salt.encode('ascii')+nhash.encode('ascii')).hexdigest()
 
+
+
+
+
+
 #encrypts file via password
 def fencrypt(filen,password):
 	f=open(filen,'r')
@@ -61,6 +70,10 @@ def fencrypt(filen,password):
 	f.write(encredstr)
 	f.close()
 
+
+
+
+
 #decrypts file via password,returns decrypted text
 def fdecrypt(filen,password):
 	# reading file in byte mode
@@ -76,6 +89,11 @@ def fdecrypt(filen,password):
 		decredstr+=psswd.decrypt(smstr[x*16:(x+1)*16])
 
 	return decode(decredstr,'utf-8').strip('%')
+
+
+
+
+
 
 #generates private and public hashes to auth from string
 def genhash(smstr):
@@ -97,6 +115,18 @@ def genhash(smstr):
 	publickey=gethash(privatekey)
 
 	return privatekey,publickey
+
+
+
+
+
+#############################        MAIN         #################################################
+#*************************************************************************************************#
+#*************************************************************************************************#
+#*************************************************************************************************#
+#*************************************************************************************************#
+
+
 
 def main():
 	if len(argv)>1 and argv[1]=='-setup': # running setup if argument is -setup
@@ -147,6 +177,9 @@ def main():
 
 	else:
 		print('Usage: python3 fcrypto.py [-addkeys , -setup]')
+
+
+
 
 
 
