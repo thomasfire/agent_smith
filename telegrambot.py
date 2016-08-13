@@ -11,7 +11,6 @@ import re
 from fcrypto import gethash
 from getpass import getpass
 import tlapi as tl
-#import makeseq as vkmkseq
 from datetime import datetime
 from time import sleep as tsleep
 import multiio as io
@@ -22,7 +21,16 @@ from sys import stdout
 url=''
 users=[]
 odmins=[]
-#maden=[]
+
+
+
+
+
+##################      SOME USEFUL FUNCTIONS       ##########################################
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
 
 # this function returns a dictionary of message_ID: message_Data , where messages are taken from VK
 def makedict():
@@ -43,6 +51,7 @@ def makedict():
 
 
 
+
 # writes current table of users to the file
 def write_users_table():
 	user_text=[]
@@ -55,6 +64,8 @@ def write_users_table():
 
 
 
+
+
 # returns a line with info about user. also returns it`s index
 def get_tl_user(user_id):
 	y=0
@@ -64,50 +75,101 @@ def get_tl_user(user_id):
 		y+=1
 	return [], -1
 
+
+
+# returns a list of stripped values
+def strip_list(somelist):
+	newlist=[]
+	for x in somelist:
+		if str(type(x))=="<class 'str'>":
+			newlist.append(x.strip())
+		else:
+			newlist.append(x)
+	return newlist
+
+
+
+
+
+# updates list of users. Is needable when there were some operations with users
+def update_users_table():
+	global users
+	# loading user`s table
+	f=open('files/tl_users.db','r')
+	userstext=f.read().strip('@ ').strip(' ;\n').split(' ;\n@ ')
+	f.close()
+	users=[]
+	for x in userstext:
+		users.append(strip_list(x.split(' :: ')))
+
+
+
+
+
+
+# updates list of Odmins
+def update_odmins_list():
+	global odmins
+	# loading list of Odmins
+	f=open('files/admins.db','r')
+	odmins=f.read().strip().split()
+	f.close()
+
+
+
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
+
+
+
+
+
+
+
+###############      THESE FUNCTIONS WORK WITH USER`S TABLE      #############################
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
 # authes user.
 def auth_user(message):
 	global url
 	global users
 
-	# allows users (except users in Black_List) to log in via 64 byte token (really it lenght is 32 byte,
+	# allows users to log in via 64 byte token (really it lenght is 32 byte,
 	# but it has 64 symbols in hexademical mode);
 	# Also checks if lenght of typed token is true;
 	if len(message[2])<75 and len(message[2])>60:
-
 		# loading list of tokens
 		f=open('files/tokens.db','r')
 		tokens=f.read().split('\n')
 		f.close()
-
 		if not tokens:
 			return
-
 		# getting hash (other name is publickey) of the token (secretkey)
 		publickey=gethash(message[2][6:71].strip())
 
 		# opening TL user`s file in append mode
 		f=open('files/tl_users.db','a')
-
 		# checking if hash(publickey) is in token`s list and if this user is not logged in
 		if publickey in tokens and not get_tl_user(message[1])[0]:
-
 			# writing new user to user table
 			f.write('@ '+message[1]+' :: '+'Anonymous'+message[1]+' :: '+'all ;')
-
 			# sending welcome message with some info about user
 			tl.sendmsg(url, message[1], "Welcome! You are now successfully authenticated as "+'Anonymous'+message[1]+
 			'.\nYou can change your nicname via /chname <new_nick> or you can view a help message via /help.')
-
 			# writing list of publickeys without recently used publickey
 			g=open('files/tokens.db','w')
 			g.write('\n'.join(tokens).replace(publickey+'\n',''))
 			g.close()
-
 		# if computed hash not in the list of available publickeys increase number of tryes of current user
 	elif publickey not in tokens and not get_tl_user(message[1])[0]:
 		# sending warning message
 		tl.sendmsg(url, message[1], 'Wrong key.')
-
 	# sending message if user already logged in or typed absolutely wrong token or user is in Black_List
 	else:
 		tl.sendmsg(url, message[1], 'You are already logged in. You can change your nick via /chname <new_nick> if you are authenticated.')
@@ -122,10 +184,7 @@ def change_users_name(message):
 	global url
 	global users
 	newusers=[]
-
-
 	#getting new nickname and writing it to log
-
 	curruser, line = get_tl_user(message[1])
 	if not curruser:
 		return
@@ -152,14 +211,32 @@ def change_users_mode(message):
 
 
 
+
+
 # sends information about user
 def send_users_info(message):
 	curruser, line = get_tl_user(message[1])
-	#print(curruser, line)
 	if not curruser:
 		return
 	tl.sendmsg(url, curruser[0] ,"You are logged in as "+curruser[1]+
 	' with recieving '+curruser[2]+' messages.')
+
+
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
+
+
+
+
+
+
+###############      THESE FUNCTIONS ARE ASSOCIATED WITH VK      #############################
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
 
 
 
@@ -172,11 +249,6 @@ def msg_send_to_vk(message, state_tl_msgs):
 	if not curruser:
 		return
 
-	# writing sequence of messages in append mode in case if Something went wrong in VK module
-	#g=open('files/tl_msgs.seq','a')
-	#g.write('Not_sent_message: '+curruser[1]+': ' +
-	#message[2][5:]+' ;\n')
-	#g.close()
 	io.write_shared_file('files/tl_msgs.seq','a', 'Not_sent_message: {0}: {1} ;\n'.format(curruser[1], message[2][5:]), state_tl_msgs)
 
 	# sending info message
@@ -186,15 +258,15 @@ def msg_send_to_vk(message, state_tl_msgs):
 			tl.sendmsg(url, qw[0], 'From TL`s ' + curruser[1] + ': ' + message[2][5:])
 
 
+
+
+
 # sends last N messages from VK
 def send_vk_log(message, state_msghistory):
 	global users
 
 	if get_tl_user(message[1])[0]:
 		# loading list of VK messages
-		#f=open("files/msgshistory.db","r")
-		#vk_messages=f.read().strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
-		#f.close()
 		vk_messages=io.read_shared_file("files/msgshistory.db", state_msghistory).strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
 
 		# making more readable list of messages and deleting users IDs
@@ -211,11 +283,24 @@ def send_vk_log(message, state_msghistory):
 		# sending message with ErrorMessage or log
 		tl.sendmsg(url, message[1].strip(), tosend)
 
-		# marking message as proccessed
-		#f=open('files/tl_msgs.made','a')
-		#f.write(' '+message[0])
-		#f.close()
 
+
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
+
+
+
+
+
+
+
+###############      THESE FUNCTIONS SEND INFO OR FUN MESSAGES      ##########################
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
 
 
 # sends help message
@@ -230,6 +315,8 @@ def send_help(message):
 
 
 
+
+
 # sends citation
 def send_citation(message):
 	if get_tl_user(message[1]):
@@ -240,6 +327,25 @@ def send_citation(message):
 
 		# sending citation
 		tl.sendmsg(url, message[1], tosend)
+
+
+
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
+
+
+
+
+
+
+##########################        THIS IS ODMIN FUNCTIONS       ##############################
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
 
 
 # [Odmin function] sends N messages bot received from TL
@@ -267,6 +373,9 @@ def send_tl_log(message):
 	tl.sendmsg(url, message[1], tosend)
 
 
+
+
+
 def send_tl_users(message):
 	global odmins
 	if message[1] not in odmins:
@@ -279,15 +388,31 @@ def send_tl_users(message):
 	tl.sendmsg(url, message[1], '\n'.join(user_text))
 
 
+
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
+
+
+
+
+
+
+###############        THIS IS TRASPORTER OF MESSAGES FROM VK TO TELGRAM      ################
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
+
+
+
 # sends messages from vk to Telegram
 def fromvktotl(state_vk_msgs):
 	global url
 	global users
 	# loading sequence of what to send. This sequence is generated in makeseq.py module
 	seq=io.read_shared_file('files/msgs.seq', state_vk_msgs)
-	#f=open('files/msgs.seq','r')
-	#seq=f.read()
-	#f.close()
 
 	if not seq:
 		return
@@ -334,59 +459,39 @@ def fromvktotl(state_vk_msgs):
 	f.write(' '+' '.join(allmsg))
 	f.close()
 
-	# updating sequance. This is crutch because of optimization.
+	# updating sequance.
 	if toall:
 		f=open('files/msgs.seq','w')
 		f.write("important:{}\n\nall:{}")
 		f.close()
 
 
-# returns a list of stripped values
-def strip_list(somelist):
-	newlist=[]
-	for x in somelist:
-		if str(type(x))=="<class 'str'>":
-			newlist.append(x.strip())
-		else:
-			newlist.append(x)
-	return newlist
 
 
-# updates list of users. Is needable when there were some operations with users
-def update_users_table():
-	global users
-	# loading user`s table
-	f=open('files/tl_users.db','r')
-	userstext=f.read().strip('@ ').strip(' ;\n').split(' ;\n@ ')
-	f.close()
-	users=[]
-	for x in userstext:
-		users.append(strip_list(x.split(' :: ')))
-
-
-# updates list of Odmins
-def update_odmins_list():
-	global odmins
-	# loading list of Odmins
-	f=open('files/admins.db','r')
-	odmins=f.read().strip().split()
-	f.close()
+#********************************************************************************************#
+#********************************************************************************************#
+#********************************************************************************************#
 
 
 
-#**************************************************************************************************
-#**************************************************************************************************
-#**************************************************************************************************
-#**************************************************************************************************
+
+
+
+
+
+
+#############################        MAIN         #################################################
+#*************************************************************************************************#
+#*************************************************************************************************#
+#*************************************************************************************************#
+#*************************************************************************************************#
 def main(urltl, state_vk_msgs, state_tl_msgs, state_msghistory):
 	global url
-	#global users
-	#global maden
-	# writing url from argument to global variable 'url'
 	url=urltl
 
 	update_users_table()
 	update_odmins_list()
+
 	offset=0
 	cycle=0
 	while True:
@@ -403,55 +508,42 @@ def main(urltl, state_vk_msgs, state_tl_msgs, state_msghistory):
 
 			# if id of last message received equals to id before you updated then do nothing with messages
 			for x in messaglist:
-				# adds new user if token is correct
 				if x[2][:5]=='/auth':
 					auth_user(x)
 					update_users_table()
-
-				# changes user`s NickName if there is command /chname
 				elif x[2][:7]=='/chname':
 					change_users_name(x)
-					#update_users_table()
-
-				# changes user`s mode of recieving messages
 				elif x[2][:5]=='/mode':
 					change_users_mode(x)
-					#update_users_table()
-
-				# sends info about user
 				elif x[2][:3]=='/me':
 					send_users_info(x)
-
-				# send to vk
 				elif x[2][:4]=='/msg':
 					msg_send_to_vk(x, state_tl_msgs)
-
-				# sending last N messages from VK
 				elif x[2][:4]=='/log':
 					send_vk_log(x, state_msghistory)
-
-				# sending help message
 				elif x[2][:5]=='/help':
 					send_help(x)
-
 				elif x[2][:6]=='/quote':
 					send_citation(x)
-
 				elif x[2][:6]=='/tllog':
 					send_tl_log(x)
-
 				elif x[2][:8]=='/tlusers':
 					send_tl_users(x)
 
-				tl.cleanup()
+			tl.cleanup()
 			# send messages from VK to Telegram
 			fromvktotl(state_vk_msgs)
 			cycle+=1
 		except Exception as e:
 			exception(e)
 
-	#returning ID of last messages
-	#return offset
+#*************************************************************************************************#
+#*************************************************************************************************#
+#*************************************************************************************************#
+#*************************************************************************************************#
+
+
+
 
 
 
