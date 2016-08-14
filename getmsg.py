@@ -8,7 +8,6 @@
 import vk_api
 from datetime import datetime
 from logging import exception,basicConfig,WARNING,warning
-import multiio as io
 
 
 
@@ -220,7 +219,7 @@ def cleanup(msgs, chatid, vk, msghistory):
 
 
 
-def main(vk, chatidget, msghistory, lastid=0):
+def getmain(vk, chatidget, msghistory, lastid=0):
 	try:
 		# getting messages. See vk_api docs
 		msgs = vk.messages.get(count=200, chat_id=chatidget, last_message_id=lastid)
