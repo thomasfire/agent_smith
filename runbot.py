@@ -15,10 +15,10 @@ import re
 from fcrypto import gethash,fdecrypt
 from getpass import getpass
 from tlapi import geturl,getcaptcha
-from logging import exception, basicConfig, WARNING
+from logging import exception, basicConfig, WARNING, DEBUG
 from sys import stdout
 from datetime import datetime
-from multiprocessing import Process, Value, Array
+from multiprocessing import Process, Value
 from time import sleep as tsleep
 import multiio as io
 
@@ -49,7 +49,7 @@ def clearsent(sent_msgs):
 
 
 
-def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs):
+def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk):
 	cycles=0
 	lastid=0
 	lastidnew=0
@@ -60,7 +60,7 @@ def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_m
 				stdout.flush()
 
 			# getting messages
-			lastidnew=getmsg.main(vk, chatid, msghistory, lastid)
+			lastidnew=getmsg.getmain(vk, chatid, msghistory, lastid)
 
 			# update list of available media every 1000th iterarion. It is about every 8-20th minute if you have non-server connection
 			if cycles>=1000:
@@ -71,10 +71,10 @@ def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_m
 
 			# running retranslation to TL only if there are new messages from VK
 			if not lastid==lastidnew:
-				makeseq.main(msghistory, vk_msgs, sent_msgs)
+				makeseq.mkmain(msghistory, vk_msgs, sent_msgs, new_to_tl)
 
 			# processing commands and retranslation_from_TL in VK
-			sendtovk.main(vk,chatid,lastidnew -lastid, msghistory, tl_msgs)
+			sendtovk.stvmain(vk, chatid, lastidnew -lastid, msghistory, tl_msgs, new_to_vk)
 
 			# updating last number and cleaning up logs
 			lastid=lastidnew
@@ -124,20 +124,18 @@ def main():
 	url=geturl(psswd)
 
 	# init of files state
-	#state_tl_msgs = Value('i', 0)
-	#state_msghistory = Value('i', 0)
-	#state_vk_msgs = Value('i', 0)
-
 	tl_msgs = io.SharedFile('files/tl_msgs.seq')
 	msghistory = io.SharedFile('files/msgshistory.db')
 	vk_msgs = io.SharedFile('files/msgs.seq')
 	sent_msgs = io.SharedFile('files/msgs.sent')
+	new_to_tl = Value('i', 0)
+	new_to_vk = Value('i', 0)
 
 	# starting bot
 	print('Logged in, starting bot...')
 
-	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs))
-	tl_process = Process(target=telegrambot.main, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs))
+	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk))
+	tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk))
 
 	print('Starting vk bot...')
 	vk_process.start()
