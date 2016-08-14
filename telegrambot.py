@@ -13,7 +13,6 @@ from getpass import getpass
 import tlapi as tl
 from datetime import datetime
 from time import sleep as tsleep
-import multiio as io
 from logging import exception,basicConfig,WARNING
 from sys import stdout
 #https://api.telegram.org/bot<token>/METHOD_NAME
@@ -242,7 +241,7 @@ def send_users_info(message):
 
 
 #writes text and message_id(will be deleted as it sent) that will be sent to vk.
-def msg_send_to_vk(message, tl_msgs):
+def msg_send_to_vk(message, tl_msgs, new_to_vk):
 	global url
 
 	curruser, line = get_tl_user(message[1])
@@ -251,7 +250,8 @@ def msg_send_to_vk(message, tl_msgs):
 		return
 
 	tl_msgs.write('a', '{0}: {1} ;\n'.format(curruser[1], message[2][5:]))
-	
+
+	new_to_vk.value = 1
 	# sending info message
 	tl.sendmsg(url, curruser[0], "The message will be sent soon.")
 	for qw in users:
@@ -399,7 +399,7 @@ def send_tl_users(message):
 
 
 
-###############        THIS IS TRASPORTER OF MESSAGES FROM VK TO TELGRAM      ################
+###############        THIS IS TRASPORTER OF MESSAGES FROM VK TO TELEGRAM      ###############
 #********************************************************************************************#
 #********************************************************************************************#
 #********************************************************************************************#
@@ -407,11 +407,16 @@ def send_tl_users(message):
 
 
 # sends messages from vk to Telegram
-def fromvktotl(vk_msgs, sent_msgs):
+def fromvktotl(vk_msgs, sent_msgs, new_to_tl):
 	global url
 	global users
-	# loading sequence of what to send. This sequence is generated in makeseq.py module
+
+	if not new_to_tl.value:
+		return
+
+	#print('TL reading vk_msgs')
 	seq = vk_msgs.read()
+	#print('Done')
 	if not seq:
 		return
 
@@ -453,10 +458,12 @@ def fromvktotl(vk_msgs, sent_msgs):
 				tl.sendmsg(url, userid, toall)
 
 	# marking messages as sent
+	#print('TL reading sent_msgs')
 	sent_msgs.write('a', ' '+' '.join(allmsg))
-	# updating sequance.
-	if toall:
-		vk_msgs.write('w', "important:{}\n\nall:{}")
+	#print('Done')
+
+	vk_msgs.write('w', "important:{}\n\nall:{}")
+	new_to_tl.value = 0
 
 
 
@@ -478,7 +485,7 @@ def fromvktotl(vk_msgs, sent_msgs):
 #*************************************************************************************************#
 #*************************************************************************************************#
 #*************************************************************************************************#
-def main(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs):
+def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk):
 	global url
 	url=urltl
 
@@ -488,16 +495,20 @@ def main(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs):
 	offset=0
 	cycle=0
 	while True:
+		#print('TL_CYCLE {}'.format(str(datetime.now())))
 		if cycle%3==0:
 			print(',',end='')
 			stdout.flush()
 		if cycle>=1000:
-			print('\n{0}:  1000 TL cycles!;    tllast = {1};'.format(str(datetime.now()), offset))
+			#print('\n{0}:  1000 TL cycles!;    tllast = {1};'.format(str(datetime.now()), offset))
 			cycle=0
+			tl.cleanup()
 
 		try:
+			#print('Start getting {}'.format(str(datetime.now())))
 			# getting new last message and list of messages
 			offset, messaglist = tl.getmsg(url, offset)
+			#print('Done {}'.format(str(datetime.now())))
 
 			# if id of last message received equals to id before you updated then do nothing with messages
 			for x in messaglist:
@@ -511,7 +522,7 @@ def main(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs):
 				elif x[2][:3]=='/me':
 					send_users_info(x)
 				elif x[2][:4]=='/msg':
-					msg_send_to_vk(x, tl_msgs)
+					msg_send_to_vk(x, tl_msgs, new_to_vk)
 				elif x[2][:4]=='/log':
 					send_vk_log(x, msghistory)
 				elif x[2][:5]=='/help':
@@ -523,9 +534,8 @@ def main(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs):
 				elif x[2][:8]=='/tlusers':
 					send_tl_users(x)
 
-			tl.cleanup()
 			# send messages from VK to Telegram
-			fromvktotl(vk_msgs, sent_msgs)
+			fromvktotl(vk_msgs, sent_msgs, new_to_tl)
 			cycle+=1
 		except Exception as e:
 			exception(e)
