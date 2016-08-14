@@ -9,7 +9,7 @@
 import vk_api
 from random import choice
 from logging import exception,basicConfig,WARNING
-import multiio as io
+
 
 
 
@@ -121,9 +121,8 @@ chatid - chat_id where to send messages
 def sendtl(vk, chatid, tl_msgs):
 	try:
 		msgs = tl_msgs.read()
-		if msgs:
-			vk.messages.send(chat_id=chatid, message=msgs)
-
+		#if msgs:
+		vk.messages.send(chat_id=chatid, message=msgs)
 		tl_msgs.write('w', '')
 	except Exception as e:
 		exception('smth goes wrong at sending messages from Telegram:\n')
@@ -146,7 +145,7 @@ vk - vk_api tools. See "vk = vk_session.get_api()" at the end of this file.
 chatid - chat_id where to send messages
 countofmsgs - count of received messages in latest update. It is useful for optimization
 '''
-def main(vk, chatid, countofmsgs, msghistory, tl_msgs):
+def stvmain(vk, chatid, countofmsgs, msghistory, tl_msgs, new_to_vk):
 	if countofmsgs>0:
 		msgs=msghistory.read().strip().strip(';').split(';\n@')[-10:]
 		nmsg=[]
@@ -178,8 +177,9 @@ def main(vk, chatid, countofmsgs, msghistory, tl_msgs):
 
 			else:
 				continue
-
-	sendtl(vk, chatid, tl_msgs)
+	if new_to_vk.value:
+		sendtl(vk, chatid, tl_msgs)
+		new_to_vk.value = 0
 
 
 
