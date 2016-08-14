@@ -7,13 +7,12 @@
 """
 
 from re import findall
-import multiio as io
 
 
 
 
 
-def main(msghistory, vk_msgs, sent_msgs):
+def mkmain(msghistory, vk_msgs, sent_msgs, new_to_tl):
 	listofmsgs=msghistory.read().split(' ;\n@ ')[-200:]
 
 	f=open('files/keywords.db','r')
@@ -52,6 +51,8 @@ def main(msghistory, vk_msgs, sent_msgs):
 					impnt.append(msg[0].strip())
 					break
 	# writing sequances
+	if allmsg:
+		new_to_tl.value = 1
 	vk_msgs.write('w', "important:{"+" ".join(impnt)+"}\n\n" +"all:{"+" ".join(allmsg)+"}")
 	# cleaning up messages
 	if len(listofmsgs)>1000:
