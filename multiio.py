@@ -49,8 +49,10 @@ class SharedFile(object):
 	def wait_freedom_and_lock(self):
 		self.fevent.wait()
 		self.fevent.clear()
+		#return
 
 
 
 	def unlock(self):
 		self.fevent.set()
+		#return
