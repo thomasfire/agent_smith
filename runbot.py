@@ -64,7 +64,7 @@ def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_m
 
 			# update list of available media every 1000th iterarion. It is about every 8-20th minute if you have non-server connection
 			if cycles>=1000:
-				clearsent()
+				clearsent(sent_msgs)
 				updatemedia.main(vk, albumid, userid)
 				cycles=0
 				print('\n',str(datetime.now()),':  Big cycle done!;    vklast=',lastid,';')
@@ -134,7 +134,7 @@ def main():
 	# starting bot
 	print('Logged in, starting bot...')
 
-	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk))
+	vk_process = Process(target=run_vk_bot, args=(vk, 1, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk))
 	tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk))
 
 	print('Starting vk bot...')
