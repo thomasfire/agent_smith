@@ -413,6 +413,7 @@ def fromvktotl(vk_msgs, sent_msgs, new_to_tl):
 
 	if not new_to_tl.value:
 		return
+	new_to_tl.value = 0
 
 	seq = vk_msgs.read()
 
@@ -495,7 +496,7 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk)
 			print(',',end='')
 			stdout.flush()
 		if cycle>=1000:
-			#print('\n{0}:  1000 TL cycles!;    tllast = {1};'.format(str(datetime.now()), offset))
+			print('\n{0}:  1000 TL cycles!;    tllast = {1};'.format(str(datetime.now()), offset))
 			cycle=0
 			tl.cleanup()
 
