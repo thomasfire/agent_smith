@@ -95,14 +95,13 @@ def getmsg(url,offset=0):
 			or x['message']['text'][0:5]=='/help' or x['message']['text'][0:5]=='/auth'
 			or x['message']['text'][0:4]=='/log' or x['message']['text'][0:3]=='/me'
 			or x['message']['text'][0:6]=='/tllog' or x['message']['text'][0:8]=='/captcha'
-			or x['message']['text'][0:8]=='/tlusers'))
-			and ';\n@' not in x['message']['text']):
+			or x['message']['text'][0:8]=='/tlusers'))):
 
 				#writing this message
 				f.write('@ msg_id='+str(x['message']['message_id'])+' :: '+
 				str(x['message']['from']['id'])+' :: '+
 				datetime.fromtimestamp(x['message']['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+
-				x['message']['text']+' ;\n')
+				x['message']['text'].replace(';\n@', ':\n:')+' ;\n')
 
 				# appending list
 				messaglist.append(strip_list([str(x['message']['message_id']), str(x['message']['from']['id']), x['message']['text'].strip()]))
