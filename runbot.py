@@ -15,7 +15,7 @@ import re
 from fcrypto import gethash,fdecrypt
 from getpass import getpass
 from tlapi import geturl,getcaptcha
-from logging import exception, basicConfig, WARNING, DEBUG
+from logging import exception, basicConfig, WARNING
 from sys import stdout
 from datetime import datetime
 from multiprocessing import Process, Value
