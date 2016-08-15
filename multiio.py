@@ -47,17 +47,10 @@ class SharedFile(object):
 
 
 	def wait_freedom_and_lock(self):
-		#print("Wait {}".format(inspect.stack()[1][3]))
 		self.fevent.wait()
 		self.fevent.clear()
-		#while self.state.value:
-		#	tsleep(0.0001)
-		#self.state.value = 1
+
 
 
 	def unlock(self):
-		#print("Unlock {}".format(inspect.stack()[1][3]))
 		self.fevent.set()
-		#tsleep(0.001)
-		#self.state.value = 0
-		#tsleep(0.001)

@@ -414,11 +414,8 @@ def fromvktotl(vk_msgs, sent_msgs, new_to_tl):
 	if not new_to_tl.value:
 		return
 
-	#print('TL reading vk_msgs')
 	seq = vk_msgs.read()
-	#print('Done')
-	if not seq:
-		return
+
 
 	allmsg=''.join(re.findall(r'all:{(.*?)}',seq)).split()
 	imnt=''.join(re.findall(r'important:{(.*?)}',seq)).split()
@@ -458,9 +455,7 @@ def fromvktotl(vk_msgs, sent_msgs, new_to_tl):
 				tl.sendmsg(url, userid, toall)
 
 	# marking messages as sent
-	#print('TL reading sent_msgs')
 	sent_msgs.write('a', ' '+' '.join(allmsg))
-	#print('Done')
 
 	vk_msgs.write('w', "important:{}\n\nall:{}")
 	new_to_tl.value = 0
@@ -505,10 +500,8 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk)
 			tl.cleanup()
 
 		try:
-			#print('Start getting {}'.format(str(datetime.now())))
 			# getting new last message and list of messages
 			offset, messaglist = tl.getmsg(url, offset)
-			#print('Done {}'.format(str(datetime.now())))
 
 			# if id of last message received equals to id before you updated then do nothing with messages
 			for x in messaglist:
