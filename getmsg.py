@@ -16,7 +16,7 @@ from logging import exception,basicConfig,WARNING,warning
 # returns '<first_name> <last_name>' associated with user_id
 def getname(user_id,vk):
 	if int(user_id)<0:
-		return '<club>'
+		return '<club>{0}'.format(abs(user_id))
 
 	db=open("files/vk_users.db","r")
 	users=db.read()
@@ -121,16 +121,13 @@ def findattachment(x,histmsg,vk):
 
 			# if current attachment is post/repost write its text and name of club/user
 			elif y['type']=='wall':
-				# security checking. Some people doesnt like such bots and they want to brake it
-				if not ';\n@' in y['wall']['text']:
-					histmsg.write(' wall '+getname(y['wall']['from_id'],vk)
-					+': '+y['wall']['text']+'\n ')
+				histmsg.write(' wall '+getname(y['wall']['from_id'],vk)
+				+': '+y['wall']['text'].replace(';\n@', ':\n:')+'\n ')
 
 			# if current attachment is commentary write its text and name of club/user
 			elif y['type']=='wall_reply':
-				if not ';\n@' in y['wall_reply']['text']:
-					histmsg.write(' comment '+getname(y['wall_reply']['from_id'],vk)+
-					': '+y['wall_reply']['text'] +'\n ')
+				histmsg.write(' comment '+getname(y['wall_reply']['from_id'],vk)+
+				': '+y['wall_reply']['text'].replace(';\n@', ':\n:') +'\n ')
 
 			# if current attachment is sticker write its url
 			elif y['type']=='sticker':
@@ -176,14 +173,12 @@ def findattachment(x,histmsg,vk):
 	if 'fwd_messages' in x.keys():
 		# cycling through list of forwarded messages
 		for y in x['fwd_messages']:
-			# security checking. Some people doesnt like such bots and they want to brake it
-			if not ';\n@' in y['body']:
-				# writing it
-				histmsg.write(" forwarded from "+getname(y['user_id'],vk)+" :: "+
-				datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
-				" :: "+y['body']+'\n ')
-				# find attachments in forwarded message. Forwarded are recursive now
-				findattachment(y,histmsg,vk)
+			# writing it
+			histmsg.write(" forwarded from "+getname(y['user_id'],vk)+" :: "+
+			datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
+			" :: "+y['body'].replace(';\n@', ':\n:') + '\n ')
+			# find attachments in forwarded message. Forwarded are recursive now
+			findattachment(y,histmsg,vk)
 
 
 
@@ -202,9 +197,9 @@ def cleanup(msgs, chatid, vk, msghistory):
 	#writing the messages to the file
 	for x in reversed(msgs['items'][:99]):
 		#checking if it is needed message and security checking. Some people doesnt like such bots and they want to brake it
-		if 'chat_id' in x.keys() and x['chat_id']==chatid and '@ '+str(x['id'])+' ' not in msglog and not ';\n@' in x['body']:
+		if 'chat_id' in x.keys() and x['chat_id']==chatid and '@ '+str(x['id'])+' ' not in msglog:
 			histmsg.write('@ '+str(x['id'])+' :: '+getname(x['user_id'],vk)+" :: "+
-			datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'])
+			datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'].replace(';\n@', ':\n:'))
 			# find attachments and forwarded messages
 			findattachment(x,histmsg,vk)
 			# writing it
