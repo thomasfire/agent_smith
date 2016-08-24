@@ -506,26 +506,26 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk)
 
 			# if id of last message received equals to id before you updated then do nothing with messages
 			for x in messaglist:
-				if x[2][:5]=='/auth':
+				if x[2][1:5]=='auth':
 					auth_user(x)
 					update_users_table()
-				elif x[2][:7]=='/chname':
+				elif x[2][1:7]=='chname':
 					change_users_name(x)
-				elif x[2][:5]=='/mode':
+				elif x[2][1:5]=='mode':
 					change_users_mode(x)
-				elif x[2][:3]=='/me':
+				elif x[2][1:3]=='me':
 					send_users_info(x)
-				elif x[2][:4]=='/msg':
+				elif x[2][1:4]=='msg' or x[2][1:4]=='смс':
 					msg_send_to_vk(x, tl_msgs, new_to_vk)
-				elif x[2][:4]=='/log':
+				elif x[2][1:4]=='log':
 					send_vk_log(x, msghistory)
-				elif x[2][:5]=='/help':
+				elif x[2][1:5]=='help':
 					send_help(x)
-				elif x[2][:6]=='/quote':
+				elif x[2][1:6]=='quote':
 					send_citation(x)
-				elif x[2][:6]=='/tllog':
+				elif x[2][1:6]=='tllog':
 					send_tl_log(x)
-				elif x[2][:8]=='/tlusers':
+				elif x[2][1:8]=='tlusers':
 					send_tl_users(x)
 
 			# send messages from VK to Telegram
