@@ -10,33 +10,44 @@ from datetime import datetime
 from logging import exception,basicConfig,WARNING,warning
 
 
+user_dict = {}
 
+
+def get_user_dict():
+	db = open("files/vk_users.db","r")
+	userlist = db.read().split('\n')
+	newdict = {}
+
+	for x in userlist:
+		curruser = x.split(' :: ')
+		if len(curruser) == 2:
+			newdict[curruser[0]] = curruser[1]
+	return newdict
+
+
+def write_user_dict():
+	global user_dict
+	db=open("files/vk_users.db","w")
+	for x in user_dict.keys():
+		db.write("{0} :: {1}\n".format(x, user_dict[x]))
+	db.close()
 
 
 # returns '<first_name> <last_name>' associated with user_id
-def getname(user_id,vk):
+def getname(user_id, vk):
 	if int(user_id)<0:
 		return '<club>{0}'.format(abs(user_id))
-
-	db=open("files/vk_users.db","r")
-	users=db.read()
+	global user_dict
 
 	#checking if there are information about this user in database
 
-	if str(user_id) in users:
-		users=users.split("\n")
-		for x in users:
-			if str(user_id) in x:
-				return x.split('::')[1]
+	if str(user_id) in user_dict.keys():
+		return user_dict[str(user_id)]
 	else:
-		db.close()
 		# getting name
 		name=vk.users.get(user_ids=user_id)
-
-		#saving info of this id to the file for the fast working next time
-		db=open("files/vk_users.db","a")
-		db.write(str(user_id)+" :: "+" ".join([name[0]['first_name'],name[0]['last_name']])+"\n")
-		db.close()
+		user_dict[str(user_id)] = " ".join([name[0]['first_name'],name[0]['last_name']])
+		write_user_dict()
 
 		return " ".join([name[0]['first_name'],name[0]['last_name']])
 
@@ -214,10 +225,13 @@ def cleanup(msgs, chatid, vk, msghistory):
 
 
 
-def getmain(vk, chatidget, msghistory, lastid=0):
+def getmain(vk, chatidget, msghistory, userdic, lastid=0):
+	global user_dict
 	try:
 		# getting messages. See vk_api docs
 		msgs = vk.messages.get(count=200, chat_id=chatidget, last_message_id=lastid)
+
+		user_dict = userdic
 	# writing to the file and marking as read
 		if msgs['items']:
 			msgid=cleanup(msgs, chatidget, vk, msghistory)
@@ -226,10 +240,10 @@ def getmain(vk, chatidget, msghistory, lastid=0):
 					markasread(vk,msgid)
 				except:
 					exception('smth goes wrong at marking as read')
-				return msgid # returning ID of last message
-		return lastid
+				return msgid, user_dict # returning ID of last message
+		return lastid, user_dict
 	except ConnectionResetError:
-		return lastid
+		return lastid, user_dict
 	except Exception as e:
 		exception('smth goes wrong at getting messages: ')
 
