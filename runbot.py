@@ -16,11 +16,11 @@ from fcrypto import gethash,fdecrypt
 from getpass import getpass
 from tlapi import geturl,getcaptcha
 from logging import exception, basicConfig, WARNING
-from sys import stdout
 from datetime import datetime
 from multiprocessing import Process, Value
 from time import sleep as tsleep
 import multiio as io
+import curses
 
 #configuring logs
 basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
@@ -49,26 +49,22 @@ def clearsent(sent_msgs):
 
 
 
-def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk):
+def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_vk):
 	userdic = getmsg.get_user_dict()
-	cycles=0
 	lastid=0
 	lastidnew=0
+	cycles = 0
 	while True:
-		try: # print point every 3rd iteration
-			if cycles%3==0:
-				print('.',end='')
-				stdout.flush()
-
+		try:
 			# getting messages
 			lastidnew, userdic = getmsg.getmain(vk, chatid, msghistory, userdic, lastid)
 
 			# update list of available media every 1000th iterarion. It is about every 8-20th minute if you have non-server connection
-			if cycles>=1000:
+			if cycles >= 1000:
 				clearsent(sent_msgs)
 				updatemedia.main(vk, albumid, userid)
-				cycles=0
-				print('\n',str(datetime.now()),':  Big cycle done!;    vklast=',lastid,';')
+				cycles = 0
+				#print('\n',str(datetime.now()),':  Big cycle done!;    vklast=',lastid,';')
 
 			# running retranslation to TL only if there are new messages from VK
 			if not lastid==lastidnew:
@@ -79,8 +75,8 @@ def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_m
 
 			# updating last number and cleaning up logs
 			lastid=lastidnew
-
-			cycles+=1
+			cycles += 1
+			iterations_vk.value += 1
 		except ConnectionResetError: # there are often this type of errors, but it is not my fault
 			continue
 		except Exception as exp:
@@ -131,12 +127,14 @@ def main():
 	sent_msgs = io.SharedFile('files/msgs.sent')
 	new_to_tl = Value('i', 0)
 	new_to_vk = Value('i', 0)
+	iterations_vk = Value('i', 0)
+	iterations_tl = Value('i', 0)
 
 	# starting bot
 	print('Logged in, starting bot...')
 
-	vk_process = Process(target=run_vk_bot, args=(vk, 1, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk))
-	tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk))
+	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_vk))
+	tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl))
 
 	print('Starting vk bot...')
 	vk_process.start()
@@ -144,16 +142,31 @@ def main():
 	print('Starting TL bot...')
 	tl_process.start()
 
+	stdscr = curses.initscr()
+	curses.noecho()
+	stdscr.keypad(True)
+
 	while True:
+		out_string = '''Temp: {0} C; \nSpeed_TL: {1}; \nSpeed_VK: {2};'''
 		tempfile=open('/sys/class/thermal/thermal_zone0/temp', 'r')
-		print('Temp: ' + str(float(tempfile.read().strip())/1000) + ' C ', end='')
+		#print('Temp: ' + str(float(tempfile.read().strip())/1000) + ' C ', end='')
+		ctemp = str(float(tempfile.read().strip())/1000)
 		tempfile.close()
-		stdout.flush()
+		stdscr.clear()
+		stdscr.addstr(out_string.format(ctemp, iterations_tl.value, iterations_vk.value))
+		stdscr.refresh()
+		#stdout.flush()
+		iterations_tl.value = 0
+		iterations_vk.value = 0
 		tsleep(60)
 
 
 	tl_process.join()
 	vk_process.join()
+
+	curses.nocbreak()
+	stdscr.keypad(False)
+	curses.echo()
 	print('Exit...')
 
 
