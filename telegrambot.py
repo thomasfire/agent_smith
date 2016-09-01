@@ -14,7 +14,6 @@ import tlapi as tl
 from datetime import datetime
 from time import sleep as tsleep
 from logging import exception,basicConfig,WARNING
-from sys import stdout
 #https://api.telegram.org/bot<token>/METHOD_NAME
 
 url=''
@@ -481,7 +480,7 @@ def fromvktotl(vk_msgs, sent_msgs, new_to_tl):
 #*************************************************************************************************#
 #*************************************************************************************************#
 #*************************************************************************************************#
-def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk):
+def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl):
 	global url
 	url=urltl
 
@@ -491,12 +490,8 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk)
 	offset=0
 	cycle=0
 	while True:
-		#print('TL_CYCLE {}'.format(str(datetime.now())))
-		if cycle%3==0:
-			print(',',end='')
-			stdout.flush()
 		if cycle>=1000:
-			print('\n{0}:  1000 TL cycles!;    tllast = {1};'.format(str(datetime.now()), offset))
+			#print('\n{0}:  1000 TL cycles!;    tllast = {1};'.format(str(datetime.now()), offset))
 			cycle=0
 			tl.cleanup()
 
@@ -530,7 +525,8 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk)
 
 			# send messages from VK to Telegram
 			fromvktotl(vk_msgs, sent_msgs, new_to_tl)
-			cycle+=1
+			cycle += 1
+			iterations_tl.value += 1
 		except Exception as e:
 			exception(e)
 
