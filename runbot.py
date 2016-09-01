@@ -50,6 +50,7 @@ def clearsent(sent_msgs):
 
 
 def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk):
+	userdic = getmsg.get_user_dict()
 	cycles=0
 	lastid=0
 	lastidnew=0
@@ -60,7 +61,7 @@ def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_m
 				stdout.flush()
 
 			# getting messages
-			lastidnew=getmsg.getmain(vk, chatid, msghistory, lastid)
+			lastidnew, userdic = getmsg.getmain(vk, chatid, msghistory, userdic, lastid)
 
 			# update list of available media every 1000th iterarion. It is about every 8-20th minute if you have non-server connection
 			if cycles>=1000:
