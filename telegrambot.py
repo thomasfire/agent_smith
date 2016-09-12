@@ -254,8 +254,29 @@ def msg_send_to_vk(message, tl_msgs, new_to_vk):
 	# sending info message
 	tl.sendmsg(url, curruser[0], "The message will be sent soon.")
 	for qw in users:
-		if not qw[0] == curruser[0]:
+		if not qw[0] == curruser[0] and qw[2] == 'all':
 			tl.sendmsg(url, qw[0], 'From TL`s ' + curruser[1] + ': ' + message[2][5:])
+
+
+
+#writes text and message_id(will be deleted as it sent) that will be sent to vk.
+def ach_send_to_vk(message, tl_msgs, new_to_vk):
+	global url
+
+	curruser, line = get_tl_user(message[1])
+
+	if not curruser:
+		return
+
+	tl_msgs.write('a', '{0}: {1} ;\n'.format(curruser[1], message[2][5:].upper()))
+
+	new_to_vk.value = 1
+	# sending info message
+	tl.sendmsg(url, curruser[0], "The achtung will be sent soon.")
+	for qw in users:
+		if not qw[0] == curruser[0] and not qw[2] == 'no':
+			tl.sendmsg(url, qw[0], 'From TL`s ' + curruser[1] + ': ' + message[2][5:].upper())
+
 
 
 
@@ -343,6 +364,11 @@ def send_citation(message):
 #********************************************************************************************#
 #********************************************************************************************#
 #********************************************************************************************#
+# 		   _    ____  __  __ ___ _   _
+# 		  / \  |  _ \|  \/  |_ _| \ | |
+# 		 / _ \ | | | | |\/| || ||  \| |
+# 		/ ___ \| |_| | |  | || || |\  |
+#	   /_/   \_|____/|_|  |_|___|_| \_|
 
 
 
@@ -385,6 +411,16 @@ def send_tl_users(message):
 
 	tl.sendmsg(url, message[1], '\n'.join(user_text))
 
+
+
+
+def send_stat(message, curr_stat):
+	global odmins
+	if message[1] not in odmins:
+		return
+	out_string = '''Temp: {0} C; \nSpeed_TL: {1}; \nSpeed_VK: {2};'''
+
+	tl.sendmsg(url, message[1], out_string.format(curr_stat['temp'], curr_stat['iter_tl'], curr_stat['iter_vk']))
 
 
 #********************************************************************************************#
@@ -480,7 +516,7 @@ def fromvktotl(vk_msgs, sent_msgs, new_to_tl):
 #*************************************************************************************************#
 #*************************************************************************************************#
 #*************************************************************************************************#
-def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl):
+def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl, curr_stat):
 	global url
 	url=urltl
 
@@ -522,6 +558,10 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk,
 					send_tl_log(x)
 				elif x[2][1:8]=='tlusers':
 					send_tl_users(x)
+				elif x[2][1:5]=='stat':
+					send_stat(x, curr_stat)
+				elif x[2][1:4]=='imp' or x[2][1:4]=='ach' or x[2][1:4]=='важ':
+					ach_send_to_vk(x, tl_msgs, new_to_vk)
 
 			# send messages from VK to Telegram
 			fromvktotl(vk_msgs, sent_msgs, new_to_tl)
