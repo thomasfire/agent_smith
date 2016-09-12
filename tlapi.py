@@ -91,8 +91,9 @@ def getmsg(url,offset=0):
 			# and some security checks
 			if (('@ msg_id='+str(x['message']['message_id']) not in msglist and
 			(x['message']['text'][1:4]=='msg' or x['message']['text'][1:4]=='смс' or x['message']['text'][1:6]=='quote'
+			or x['message']['text'][1:4]=='imp' or x['message']['text'][1:4]=='ach' or x['message']['text'][1:4]=='важ'
 			or x['message']['text'][1:5]=='mode' or x['message']['text'][1:7]=='chname'
-			or x['message']['text'][1:5]=='help' or x['message']['text'][1:5]=='auth'
+			or x['message']['text'][1:5]=='help' or x['message']['text'][1:5]=='stat' or x['message']['text'][1:5]=='auth'
 			or x['message']['text'][1:4]=='log' or x['message']['text'][1:3]=='me'
 			or x['message']['text'][1:6]=='tllog' or x['message']['text'][1:8]=='captcha'
 			or x['message']['text'][1:8]=='tlusers'))):
