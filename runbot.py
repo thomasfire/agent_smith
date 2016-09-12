@@ -17,7 +17,7 @@ from getpass import getpass
 from tlapi import geturl,getcaptcha
 from logging import exception, basicConfig, WARNING
 from datetime import datetime
-from multiprocessing import Process, Value
+from multiprocessing import Process, Value, Manager
 from time import sleep as tsleep
 import multiio as io
 import curses
@@ -129,12 +129,17 @@ def main():
 	new_to_vk = Value('i', 0)
 	iterations_vk = Value('i', 0)
 	iterations_tl = Value('i', 0)
+	stat_man = Manager()
+	curr_stat = stat_man.dict()
+	curr_stat['temp'] = 0
+	curr_stat['iter_tl'] = 0
+	curr_stat['iter_vk'] = 0
 
 	# starting bot
 	print('Logged in, starting bot...')
 
 	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_vk))
-	tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl))
+	tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl, curr_stat))
 
 	print('Starting vk bot...')
 	vk_process.start()
@@ -153,6 +158,9 @@ def main():
 		ctemp = str(float(tempfile.read().strip())/1000)
 		tempfile.close()
 		stdscr.clear()
+		curr_stat['temp'] = ctemp
+		curr_stat['iter_tl'] = iterations_tl.value
+		curr_stat['iter_vk'] = iterations_vk.value
 		stdscr.addstr(out_string.format(ctemp, iterations_tl.value, iterations_vk.value))
 		stdscr.refresh()
 		#stdout.flush()
