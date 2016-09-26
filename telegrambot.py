@@ -455,6 +455,11 @@ def send_bug(message):
 	global url
 	global odmins
 
+	curruser, line = get_tl_user(message[1])
+
+	if not curruser:
+		return
+		
 	for x in odmins:
 		tl.sendmsg(url, x, 'BUG! {0}'.format(message[2][5:]))
 
