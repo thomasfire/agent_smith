@@ -20,7 +20,9 @@ from datetime import datetime
 from multiprocessing import Process, Value, Manager
 from time import sleep as tsleep
 import multiio as io
-import curses
+from sys import argv
+
+#import curses
 
 #configuring logs
 basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
@@ -141,15 +143,22 @@ def main():
 	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_vk))
 	tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl, curr_stat))
 
-	print('Starting vk bot...')
+	print('Starting VK bot...')
 	vk_process.start()
 
 	print('Starting TL bot...')
 	tl_process.start()
 
-	stdscr = curses.initscr()
-	curses.noecho()
-	stdscr.keypad(True)
+	# checking if admin gave argument "--screen"
+	if len(argv)>1 and argv[1]=='--screen':
+		import curses
+		stdscr = curses.initscr()
+		curses.noecho()
+		stdscr.keypad(True)
+
+	# crutch
+	iterations_tl.value = 1
+	iterations_vk.value = 1
 
 	while True:
 		out_string = '''Temp: {0} C; \nSpeed_TL: {1}; \nSpeed_VK: {2};'''
@@ -157,12 +166,31 @@ def main():
 		#print('Temp: ' + str(float(tempfile.read().strip())/1000) + ' C ', end='')
 		ctemp = str(float(tempfile.read().strip())/1000)
 		tempfile.close()
-		stdscr.clear()
+
 		curr_stat['temp'] = ctemp
 		curr_stat['iter_tl'] = iterations_tl.value
 		curr_stat['iter_vk'] = iterations_vk.value
-		stdscr.addstr(out_string.format(ctemp, iterations_tl.value, iterations_vk.value))
-		stdscr.refresh()
+
+		if len(argv)>1 and argv[1]=='--screen':
+			stdscr.clear()
+			stdscr.addstr(out_string.format(ctemp, iterations_tl.value, iterations_vk.value))
+			stdscr.refresh()
+
+		# checking if process is alive. If not, restarting process
+		if iterations_tl.value == 0:
+			tl_process.terminate()
+			tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl, curr_stat))
+			print('Restarting TL bot...')
+			tl_process.start()
+			#iterations_tl.value = 1
+
+		if iterations_vk.value == 0:
+			vk_process.terminate()
+			vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_vk))
+			print('Restarting VK bot...')
+			vk_process.start()
+			#iterations_vk.value = 1
+
 		#stdout.flush()
 		iterations_tl.value = 0
 		iterations_vk.value = 0
