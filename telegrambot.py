@@ -285,6 +285,7 @@ def ach_send_to_vk(message, tl_msgs, new_to_vk):
 # sends last N messages from VK
 def send_vk_log(message, msghistory):
 	global users
+	global url
 
 	if get_tl_user(message[1])[0]:
 		# loading list of VK messages
@@ -324,6 +325,7 @@ def send_vk_log(message, msghistory):
 
 # sends help message
 def send_help(message):
+	global url
 	# loading help message
 	f=open('files/info.db','r')
 	helpmsg=f.read().split('VK@@##@@TL')[1].strip()
@@ -338,6 +340,7 @@ def send_help(message):
 
 # sends citation
 def send_citation(message):
+	global url
 	if get_tl_user(message[1]):
 		# loading and choosing citation
 		f=open('files/citations.db','r')
@@ -375,6 +378,7 @@ def send_citation(message):
 # [Odmin function] sends N messages bot received from TL
 def send_tl_log(message):
 	global odmins
+	global url
 	if message[1] not in odmins:
 		return
 	# loading TL messages list
@@ -402,6 +406,7 @@ def send_tl_log(message):
 
 def send_tl_users(message):
 	global odmins
+	global url
 	if message[1] not in odmins:
 		return
 
@@ -414,14 +419,44 @@ def send_tl_users(message):
 
 
 
+
+def send_adm_msg(message, tl_msgs, new_to_vk):
+	global odmins
+	global url
+
+	if message[1] not in odmins:
+		return
+
+	curruser = message[1]
+	tl_msgs.write('a', '{0} \n'.format(message[2][5:]))
+
+	new_to_vk.value = 1
+	# sending info message
+	tl.sendmsg(url, curruser, "The Admin-message will be sent soon.")
+	for qw in users:
+		if not qw[0] == curruser:
+			tl.sendmsg(url, qw[0], message[2][5:])
+
+
+
+
+
 def send_stat(message, curr_stat):
 	global odmins
+	global url
 	if message[1] not in odmins:
 		return
 	out_string = '''Temp: {0} C; \nSpeed_TL: {1}; \nSpeed_VK: {2};'''
 
 	tl.sendmsg(url, message[1], out_string.format(curr_stat['temp'], curr_stat['iter_tl'], curr_stat['iter_vk']))
 
+
+def send_bug(message):
+	global url
+	global odmins
+
+	for x in odmins:
+		tl.sendmsg(url, x, 'BUG! {0}'.format(message[2][5:]))
 
 #********************************************************************************************#
 #********************************************************************************************#
@@ -548,6 +583,10 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk,
 					send_users_info(x)
 				elif x[2][1:4]=='msg' or x[2][1:4]=='смс':
 					msg_send_to_vk(x, tl_msgs, new_to_vk)
+				elif x[2][1:4]=='adm' or x[2][1:5]=='anon':
+					send_adm_msg(x, tl_msgs, new_to_vk)
+				elif x[2][1:4]=='bug' or x[2][1:5]=='баг':
+					send_bug(x)
 				elif x[2][1:4]=='log':
 					send_vk_log(x, msghistory)
 				elif x[2][1:5]=='help':
