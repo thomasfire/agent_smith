@@ -459,7 +459,7 @@ def send_bug(message):
 
 	if not curruser:
 		return
-		
+
 	for x in odmins:
 		tl.sendmsg(url, x, 'BUG! {0}'.format(message[2][5:]))
 
@@ -590,7 +590,7 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk,
 					msg_send_to_vk(x, tl_msgs, new_to_vk)
 				elif x[2][1:4]=='adm' or x[2][1:5]=='anon':
 					send_adm_msg(x, tl_msgs, new_to_vk)
-				elif x[2][1:4]=='bug' or x[2][1:5]=='баг':
+				elif x[2][1:4]=='bug' or x[2][1:4]=='баг':
 					send_bug(x)
 				elif x[2][1:4]=='log':
 					send_vk_log(x, msghistory)
