@@ -101,23 +101,20 @@ def main():
 	albumid=int("".join(re.findall(r"album_id=(\d+)#endalbumid",settings)))
 	userid=int("".join(re.findall(r"userid=(\d+)#enduserid",settings)))
 
+	state_auth = False
 	# getting session
-	try:
-		vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
-	except:
-		exception('smth goes wrong at getting vk_session')
+	while not state_auth:
+		try:
+			vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
+			vk_session.authorization()
+			vk = vk_session.get_api()
+			state_auth = True
+		except:
+			state_auth = False
+			tsleep(30)
+			exception('smth goes wrong at geting api\n')
 
-	#authorization
-	try:
-		vk_session.authorization()
-	except vk_api.AuthorizationError as error_msg:
-		exception(error_msg)
-		return
-	# getting vk_api tools
-	try:
-		vk = vk_session.get_api()
-	except Exception as e:
-		exception('smth goes wrong at geting api\n')
+
 
 	#getting url
 	url=geturl(psswd)
