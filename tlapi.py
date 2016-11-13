@@ -89,7 +89,7 @@ def getmsg(url,offset=0):
 			#checking if it allowed command
 			# it is rather difficult to read. It checks if message is not in file already, if command is allowed
 			# and some security checks
-			if ('@ msg_id='+str(x['message']['message_id'])) not in msglist:
+			if ('@ msg_id='+str(x['message']['message_id'])) not in msglist and 'text' in x['message'].keys():
 				#writing this message
 				f.write('@ msg_id='+str(x['message']['message_id'])+' :: '+
 				str(x['message']['from']['id'])+' :: '+
