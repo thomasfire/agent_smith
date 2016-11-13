@@ -1,0 +1,18 @@
+ERROR    [2016-11-13 21:36:29,591] sequence item 1: expected str instance, NoneType found
+Traceback (most recent call last):
+  File "/home/thomas/gitprojects/agent_smith/telegrambot.py", line 567, in tlmain
+    auth_user(x)
+  File "/home/thomas/gitprojects/agent_smith/telegrambot.py", line 166, in auth_user
+    write_users_table()
+  File "/home/thomas/gitprojects/agent_smith/telegrambot.py", line 57, in write_users_table
+    user_text.append(' :: '.join([x, users[x][0], users[x][1]]))
+TypeError: sequence item 1: expected str instance, NoneType found
+ERROR    [2016-11-13 21:37:34,360] sequence item 1: expected str instance, NoneType found
+Traceback (most recent call last):
+  File "/home/thomas/gitprojects/agent_smith/telegrambot.py", line 567, in tlmain
+    auth_user(x)
+  File "/home/thomas/gitprojects/agent_smith/telegrambot.py", line 166, in auth_user
+    write_users_table()
+  File "/home/thomas/gitprojects/agent_smith/telegrambot.py", line 57, in write_users_table
+    user_text.append(' :: '.join([x, users[x][0], users[x][1]]))
+TypeError: sequence item 1: expected str instance, NoneType found
