@@ -5,11 +5,8 @@
 ### Main manager: Uliy Bee
 """
 
+import vk_run
 import vk_api
-import getmsg
-import updatemedia
-import makeseq
-import sendtovk
 import telegrambot
 import re
 from fcrypto import gethash,fdecrypt
@@ -42,47 +39,9 @@ def captcha_handler(captcha):
 
 
 # cleans up files/msgs.sent
-def clearsent(sent_msgs):
-	sent = sent_msgs.read().split()
-	sent_msgs.write('w', ' '.join(sent))
-
-
-
-
-
-
-def run_vk_bot(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_vk):
-	userdic = getmsg.get_user_dict()
-	lastid=0
-	lastidnew=0
-	cycles = 0
-	while True:
-		try:
-			# getting messages
-			lastidnew, userdic = getmsg.getmain(vk, chatid, msghistory, userdic, lastid)
-
-			# update list of available media every 1000th iterarion. It is about every 8-20th minute if you have non-server connection
-			if cycles >= 1000:
-				clearsent(sent_msgs)
-				updatemedia.main(vk, albumid, userid)
-				cycles = 0
-				#print('\n',str(datetime.now()),':  Big cycle done!;    vklast=',lastid,';')
-
-			# running retranslation to TL only if there are new messages from VK
-			if not lastid==lastidnew:
-				makeseq.mkmain(msghistory, vk_msgs, sent_msgs, new_to_tl)
-
-			# processing commands and retranslation_from_TL in VK
-			sendtovk.stvmain(vk, chatid, lastidnew -lastid, msghistory, tl_msgs, new_to_vk)
-
-			# updating last number and cleaning up logs
-			lastid=lastidnew
-			cycles += 1
-			iterations_vk.value += 1
-		except ConnectionResetError: # there are often this type of errors, but it is not my fault
-			continue
-		except Exception as exp:
-			exception("Something gone wrong in vk_bot:\n")
+#def clearsent(sent_msgs):
+#	sent = sent_msgs.read().split()
+#	sent_msgs.write('w', ' '.join(sent))
 
 
 
@@ -95,6 +54,7 @@ def main():
 
 	# decrypting and loading settings
 	settings=fdecrypt("files/vk.settings",psswd)
+	#print(settings)
 	login="".join(re.findall(r"login=(.+)#endlogin",settings))
 	password="".join(re.findall(r"password=(.+)#endpass",settings))
 	chatid=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
@@ -116,29 +76,35 @@ def main():
 
 
 
-	#getting url
+	# getting url
 	url=geturl(psswd)
 
-	# init of files state
-	tl_msgs = io.SharedFile('files/tl_msgs.seq')
-	msghistory = io.SharedFile('files/msgshistory.db')
-	vk_msgs = io.SharedFile('files/msgs.seq')
-	sent_msgs = io.SharedFile('files/msgs.sent')
-	new_to_tl = Value('i', 0)
-	new_to_vk = Value('i', 0)
+	# Lists of messages
+	msg_man = Manager()
+	list_of_cmds, list_of_alles, list_of_imnts, tl_msgs = msg_man.list(), msg_man.list(), msg_man.list(), msg_man.list()
+
+	# accounting the speed
 	iterations_vk = Value('i', 0)
 	iterations_tl = Value('i', 0)
+
+	# file`s safe work
+	msgshistory = io.SharedFile('files/msgshistory.db')
+
+	# stats Manager
 	stat_man = Manager()
 	curr_stat = stat_man.dict()
 	curr_stat['temp'] = 0
 	curr_stat['iter_tl'] = 0
 	curr_stat['iter_vk'] = 0
+	curr_stat['PID_VK'] = 0
+	curr_stat['PID_TL'] = 0
+
 
 	# starting bot
 	print('Logged in, starting bot...')
 
-	vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_vk))
-	tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl, curr_stat))
+	vk_process = Process(target=vk_run.run_vk_bot, args=(vk, chatid, albumid, userid, msgshistory, tl_msgs, list_of_alles, list_of_imnts, list_of_cmds, iterations_vk, curr_stat))
+	tl_process = Process(target=telegrambot.tlmain, args=(url,tl_msgs, msgshistory, list_of_alles, list_of_imnts, iterations_tl, curr_stat))
 
 	print('Starting VK bot...')
 	vk_process.start()
@@ -176,14 +142,14 @@ def main():
 		# checking if process is alive. If not, restarting process
 		if iterations_tl.value == 0:
 			tl_process.terminate()
-			tl_process = Process(target=telegrambot.tlmain, args=(url, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl, curr_stat))
+			tl_process = Process(target=telegrambot.tlmain, args=(url,tl_msgs, msgshistory, list_of_alles, list_of_imnts, iterations_tl, curr_stat))
 			print('Restarting TL bot...')
 			tl_process.start()
 			#iterations_tl.value = 1
 
 		if iterations_vk.value == 0:
 			vk_process.terminate()
-			vk_process = Process(target=run_vk_bot, args=(vk, chatid, albumid, userid, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_vk))
+			vk_process = Process(target=vk_run.run_vk_bot, args=(vk, chatid, albumid, userid, msgshistory, tl_msgs, list_of_alles, list_of_imnts, list_of_cmds, iterations_vk, curr_stat))
 			print('Restarting VK bot...')
 			vk_process.start()
 			#iterations_vk.value = 1
