@@ -14,10 +14,11 @@ import tlapi as tl
 from datetime import datetime
 from time import sleep as tsleep
 from logging import exception,basicConfig,WARNING
+from os import getpid
 #https://api.telegram.org/bot<token>/METHOD_NAME
 
 url=''
-users=[]
+users={}
 odmins=[]
 
 
@@ -53,8 +54,8 @@ def makedict():
 # writes current table of users to the file
 def write_users_table():
 	user_text=[]
-	for x in users:
-		user_text.append(' :: '.join(x))
+	for x in users.keys():
+		user_text.append(' :: '.join([x, users[x][0], users[x][1]]))
 
 	f=open('files/tl_users.db','w')
 	f.write('@ '+' ;\n@ '.join(user_text)+' ;\n')
@@ -66,12 +67,13 @@ def write_users_table():
 
 # returns a line with info about user. also returns it`s index
 def get_tl_user(user_id):
-	y=0
-	for x in users:
-		if x[0]==user_id:
-			return x, y
-		y+=1
-	return [], -1
+	if user_id in users.keys():
+		return users[user_id]
+	#for x in users.keys:
+	#	if x[0]==user_id:
+	#		return x, y
+	#	y+=1
+	return []
 
 
 
@@ -96,9 +98,12 @@ def update_users_table():
 	f=open('files/tl_users.db','r')
 	userstext=f.read().strip('@ ').strip(' ;\n').split(' ;\n@ ')
 	f.close()
-	users=[]
+	users={}
 	for x in userstext:
-		users.append(strip_list(x.split(' :: ')))
+		curruser = strip_list(x.split(' :: '))
+		users[curruser[0]] = curruser[1], curruser[2]
+	print(users)
+		#users.append(strip_list(x.split(' :: ')))
 
 
 
@@ -129,7 +134,7 @@ def update_odmins_list():
 
 ###############      THESE FUNCTIONS WORK WITH USER`S TABLE      #############################
 #********************************************************************************************#
-#********************************************************************************************#
+#**********************************sorry,_dict***********************************************#
 #********************************************************************************************#
 
 
@@ -152,17 +157,19 @@ def auth_user(message):
 		publickey=gethash(message[2][6:71].strip())
 
 		# opening TL user`s file in append mode
-		f=open('files/tl_users.db','a')
+		#f=open('files/tl_users.db','a')
 		# checking if hash(publickey) is in token`s list and if this user is not logged in
-		if publickey in tokens and not get_tl_user(message[1])[0]:
+		if publickey in tokens and not get_tl_user(message[1]):
 			# writing new user to user table
-			f.write('@ '+message[1]+' :: '+'Anonymous'+message[1]+' :: '+'all ;')
+			users[message[1]] = tl.get_users_name(url, message), 'all'
+			#f.write('@ {0} :: {1} :: all ;'.format(message[1], tl.get_users_name(message[1])))
 			# sending welcome message with some info about user
-			tl.sendmsg(url, message[1], "Welcome! You are now successfully authenticated as "+'Anonymous'+message[1]+
-			'.\nYou can change your nicname via /chname <new_nick> or you can view a help message via /help.')
+			write_users_table()
+			tl.sendmsg(url, message[1], "Welcome! You are now successfully authenticated as {0}.\nYou can change your nicname via /chname <new_nick> or you can view a help message via /help.".format(users[message[1]][0]))
 			# writing list of publickeys without recently used publickey
+			tokens.pop(tokens.index(publickey))
 			g=open('files/tokens.db','w')
-			g.write('\n'.join(tokens).replace(publickey+'\n',''))
+			g.write('\n'.join(tokens))
 			g.close()
 		# if computed hash not in the list of available publickeys increase number of tryes of current user
 	elif publickey not in tokens and not get_tl_user(message[1])[0]:
@@ -170,9 +177,9 @@ def auth_user(message):
 		tl.sendmsg(url, message[1], 'Wrong key.')
 	# sending message if user already logged in or typed absolutely wrong token or user is in Black_List
 	else:
-		tl.sendmsg(url, message[1], 'You are already logged in. You can change your nick via /chname <new_nick> if you are authenticated.')
+		tl.sendmsg(url, message[1], 'You are already logged in. You can change your nick via /chname <new_nick>')
 
-	f.close() # closing user`s file
+	#f.close() # closing user`s file
 
 
 
@@ -183,11 +190,11 @@ def change_users_name(message):
 	global users
 	newusers=[]
 	#getting new nickname and writing it to log
-	curruser, line = get_tl_user(message[1])
+	curruser = get_tl_user(message[1])
 	if not curruser:
 		return
 
-	users[line][1] = message[2][8:]
+	users[message[1]] = message[2][8:], users[message[1]][1]
 	tl.sendmsg(url, message[1], "The nickname has been changed")
 
 	write_users_table()
@@ -198,11 +205,11 @@ def change_users_name(message):
 def change_users_mode(message):
 	global url
 
-	curruser, line = get_tl_user(message[1])
+	curruser = get_tl_user(message[1])
 	if not curruser or not message[2][6:] in ['all','no','imnt']:
 		return
 
-	users[line][2] = message[2][6:]
+	users[message[1]] = users[message[1]][0], message[2][6:]
 	tl.sendmsg(url, message[1], "The mode has been changed")
 
 	write_users_table()
@@ -213,11 +220,10 @@ def change_users_mode(message):
 
 # sends information about user
 def send_users_info(message):
-	curruser, line = get_tl_user(message[1])
+	curruser = get_tl_user(message[1])
 	if not curruser:
 		return
-	tl.sendmsg(url, curruser[0] ,"You are logged in as "+curruser[1]+
-	' with recieving '+curruser[2]+' messages.')
+	tl.sendmsg(url, message[1] ,"You are logged in as {0} with recieving {1} messages.".format(curruser[0], curruser[1]))
 
 
 #********************************************************************************************#
@@ -240,42 +246,40 @@ def send_users_info(message):
 
 
 #writes text and message_id(will be deleted as it sent) that will be sent to vk.
-def msg_send_to_vk(message, tl_msgs, new_to_vk):
+def msg_send_to_vk(message, tl_msgs):
 	global url
 
-	curruser, line = get_tl_user(message[1])
+	curruser = get_tl_user(message[1])
 
 	if not curruser:
 		return
 
-	tl_msgs.write('a', '{0}: {1} ;\n'.format(curruser[1], message[2][5:]))
+	tl_msgs.append('{0}: {1} ;\n'.format(curruser[0], message[2][5:]))
 
-	new_to_vk.value = 1
 	# sending info message
-	tl.sendmsg(url, curruser[0], "The message will be sent soon.")
-	for qw in users:
-		if not qw[0] == curruser[0] and qw[2] == 'all':
-			tl.sendmsg(url, qw[0], 'From TL`s ' + curruser[1] + ': ' + message[2][5:])
+	tl.sendmsg(url, message[1], "The message will be sent soon.")
+	for qw in users.keys():
+		if not qw == message[1] and users[qw][1] == 'all':
+			tl.sendmsg(url, qw, 'From TL`s {0}: {1};'.format(curruser[0], message[2][5:]))
 
 
 
 #writes text and message_id(will be deleted as it sent) that will be sent to vk.
-def ach_send_to_vk(message, tl_msgs, new_to_vk):
+def ach_send_to_vk(message, tl_msgs):
 	global url
 
-	curruser, line = get_tl_user(message[1])
+	curruser = get_tl_user(message[1])
 
 	if not curruser:
 		return
 
-	tl_msgs.write('a', '{0}: {1} ;\n'.format(curruser[1], message[2][5:].upper()))
+	tl_msgs.append('{0}: {1} ;\n'.format(curruser[0], message[2][5:].upper()))
 
-	new_to_vk.value = 1
 	# sending info message
-	tl.sendmsg(url, curruser[0], "The achtung will be sent soon.")
+	tl.sendmsg(url, message[1], "The achtung will be sent soon.")
 	for qw in users:
-		if not qw[0] == curruser[0] and not qw[2] == 'no':
-			tl.sendmsg(url, qw[0], 'From TL`s ' + curruser[1] + ': ' + message[2][5:].upper())
+		if not qw == message[1] and not users[qw][1] == 'no':
+			tl.sendmsg(url, qw, 'ACHTUNG! From TL`s {0}: {1};'.format(curruser[0], message[2][5:].upper()))
 
 
 
@@ -287,9 +291,9 @@ def send_vk_log(message, msghistory):
 	global users
 	global url
 
-	if get_tl_user(message[1])[0]:
+	if get_tl_user(message[1]):
 		# loading list of VK messages
-		vk_messages=msghistory.read().strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
+		vk_messages = msghistory.read().strip(' ;').strip("@ ").replace(' :: ',' : ').split(';\n@')
 
 		# making more readable list of messages and deleting users IDs
 		newmsg=[]
@@ -411,8 +415,8 @@ def send_tl_users(message):
 		return
 
 	user_text=[]
-	for x in users:
-		user_text.append(' : '.join(x))
+	for x in users.keys():
+		user_text.append(' : '.join([x, users[x][0], users[x][1]]))
 
 	tl.sendmsg(url, message[1], '\n'.join(user_text))
 
@@ -420,7 +424,7 @@ def send_tl_users(message):
 
 
 
-def send_adm_msg(message, tl_msgs, new_to_vk):
+def send_adm_msg(message, tl_msgs):
 	global odmins
 	global url
 
@@ -428,14 +432,13 @@ def send_adm_msg(message, tl_msgs, new_to_vk):
 		return
 
 	curruser = message[1]
-	tl_msgs.write('a', '{0} \n'.format(message[2][5:]))
+	tl_msgs.append('{0} \n'.format(message[2][5:]))
 
-	new_to_vk.value = 1
 	# sending info message
 	tl.sendmsg(url, curruser, "The Admin-message will be sent soon.")
-	for qw in users:
-		if not qw[0] == curruser:
-			tl.sendmsg(url, qw[0], message[2][5:])
+	for qw in users.keys():
+		if not qw == curruser:
+			tl.sendmsg(url, qw, message[2][5:])
 
 
 
@@ -446,16 +449,18 @@ def send_stat(message, curr_stat):
 	global url
 	if message[1] not in odmins:
 		return
-	out_string = '''Temp: {0} C; \nSpeed_TL: {1}; \nSpeed_VK: {2};'''
+	out_string = '''Temp: {0} C; \nSpeed_TL: {1}; \nSpeed_VK: {2}; \nPID_VK: {3}; \nPID_TL: {4}'''
 
-	tl.sendmsg(url, message[1], out_string.format(curr_stat['temp'], curr_stat['iter_tl'], curr_stat['iter_vk']))
+	tl.sendmsg(url, message[1], out_string.format(curr_stat['temp'], curr_stat['iter_tl'], curr_stat['iter_vk'], curr_stat['PID_VK'], curr_stat['PID_TL']))
+
+
 
 
 def send_bug(message):
 	global url
 	global odmins
 
-	curruser, line = get_tl_user(message[1])
+	curruser = get_tl_user(message[1])
 
 	if not curruser:
 		return
@@ -482,59 +487,39 @@ def send_bug(message):
 
 
 # sends messages from vk to Telegram
-def fromvktotl(vk_msgs, sent_msgs, new_to_tl):
+def fromvktotl(list_of_alles, list_of_imnts):
 	global url
 	global users
 
-	if not new_to_tl.value:
+	if not list_of_alles:
 		return
-	new_to_tl.value = 0
 
-	seq = vk_msgs.read()
+	toall = []
+	toimnt = []
 
-
-	allmsg=''.join(re.findall(r'all:{(.*?)}',seq)).split()
-	imnt=''.join(re.findall(r'important:{(.*?)}',seq)).split()
-	# getting dictionary of messages,it looks like message_ID: message_Data
-	msgdict=makedict()
-
-	toall=[]
-	toimnt=[]
-
-	# making message what to send to users with mode 'all'
-	for x in allmsg:
-		if x in msgdict.keys():
-			toall.append(msgdict[x])
-	toall='\n'.join(toall)
+	while list_of_alles:
+		toall.append(' : '.join(list_of_alles.pop(0)[1:]))
+	toall=';\n'.join(toall)
 
 	# making message what to send to users with mode 'imnt'
-	for x in imnt:
-		if x in msgdict.keys():
-			toimnt.append(msgdict[x])
-	toimnt='\n'.join(toimnt)
+	while list_of_imnts:
+		toimnt.append(' : '.join(list_of_imnts.pop(0)[1:]))
+	toimnt=';\n'.join(toimnt)
 
-	# if toall is not empty then send messages to all users
-	if toall:
-		# cycling through user`s table
-		for x in users:
-			# loading user`s mode and ID
-			usermode, userid=x[2], x[0]
+	# cycling through user`s table
+	for x in users.keys():
+		# loading user`s mode and ID
+		usermode, userid = users[x][1], x
+		# doesn`t send if user`s mode is 'no'
+		if usermode=='no':
+			continue
+		# sends important messages to user with 'imnt' mode
+		elif toimnt and usermode=='imnt':
+			tl.sendmsg(url, userid, toimnt)
+		# sends all messages to user with 'all' mode
+		elif usermode=='all':
+			tl.sendmsg(url, userid, toall)
 
-			# doesn`t send if user`s mode is 'no'
-			if usermode=='no':
-				continue
-			# sends important messages to user with 'imnt' mode
-			elif toimnt and usermode=='imnt':
-				tl.sendmsg(url, userid, toimnt)
-			# sends all messages to user with 'all' mode
-			elif usermode=='all':
-				tl.sendmsg(url, userid, toall)
-
-	# marking messages as sent
-	sent_msgs.write('a', ' '+' '.join(allmsg))
-
-	vk_msgs.write('w', "important:{}\n\nall:{}")
-	new_to_tl.value = 0
 
 
 
@@ -556,12 +541,14 @@ def fromvktotl(vk_msgs, sent_msgs, new_to_tl):
 #*************************************************************************************************#
 #*************************************************************************************************#
 #*************************************************************************************************#
-def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk, iterations_tl, curr_stat):
+def tlmain(urltl, tl_msgs, msghistory, list_of_alles, list_of_imnts, iterations_tl, curr_stat):
 	global url
 	url=urltl
 
 	update_users_table()
 	update_odmins_list()
+	curr_stat['PID_TL'] = str(getpid())
+	print('PID_TL: {0}'.format(curr_stat['PID_TL']))
 
 	offset=0
 	cycle=0
@@ -574,6 +561,8 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk,
 		try:
 			# getting new last message and list of messages
 			offset, messaglist = tl.getmsg(url, offset)
+			if messaglist:
+				print(messaglist)
 
 			# if id of last message received equals to id before you updated then do nothing with messages
 			for x in messaglist:
@@ -587,9 +576,9 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk,
 				elif x[2][1:3]=='me':
 					send_users_info(x)
 				elif x[2][1:4]=='msg' or x[2][1:4]=='смс':
-					msg_send_to_vk(x, tl_msgs, new_to_vk)
+					msg_send_to_vk(x, tl_msgs)
 				elif x[2][1:4]=='adm' or x[2][1:5]=='anon':
-					send_adm_msg(x, tl_msgs, new_to_vk)
+					send_adm_msg(x, tl_msgs)
 				elif x[2][1:4]=='bug' or x[2][1:4]=='баг':
 					send_bug(x)
 				elif x[2][1:4]=='log':
@@ -605,10 +594,10 @@ def tlmain(urltl, vk_msgs, tl_msgs, msghistory, sent_msgs, new_to_tl, new_to_vk,
 				elif x[2][1:5]=='stat':
 					send_stat(x, curr_stat)
 				elif x[2][1:4]=='imp' or x[2][1:4]=='ach' or x[2][1:4]=='важ':
-					ach_send_to_vk(x, tl_msgs, new_to_vk)
+					ach_send_to_vk(x, tl_msgs)
 
 			# send messages from VK to Telegram
-			fromvktotl(vk_msgs, sent_msgs, new_to_tl)
+			fromvktotl(list_of_alles, list_of_imnts)
 			cycle += 1
 			iterations_tl.value += 1
 		except Exception as e:
