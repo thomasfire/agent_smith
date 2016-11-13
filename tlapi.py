@@ -71,7 +71,7 @@ url can be received from geturl();
 offset is number of message that must be received first
 See https://core.telegram.org/bots/api for more information about parametres
 '''
-def getmsg(url,offset=0):
+def getmsg(url, offset=0):
 	try:
 		# getting updates via requests.get()
 		requ=urlget(url+'getUpdates'+'?offset='+str(offset)).json()
@@ -110,6 +110,29 @@ def getmsg(url,offset=0):
 	else:
 		return 0, []
 
+
+
+
+
+
+
+def get_users_name(url, message):
+	try:
+		requ=urlget(url+'getUpdates').json()
+		#print(requ)
+		for x in requ['result']:
+			if str(message[1]) == str(x['message']['from']['id']):
+				if 'last_name' in x['message']['from'].keys() and 'first_name' in x['message']['from'].keys():
+					return '{0} {1}'.format(x['message']['from']['first_name'], x['message']['from']['last_name'])
+				elif 'first_name' in x['message']['from'].keys():
+					return '{0}'.format(x['message']['from']['first_name'])
+				else:
+					return 'Anonymous{0}'.format(message[1])
+			else:
+				return 'Anonymous{0}'.format(message[1])
+	except Exception as e:
+		exception(' A error occured while getting updates in Telegram:\n')
+		return 'Anonymous{0}'.format(message[1])
 
 
 
