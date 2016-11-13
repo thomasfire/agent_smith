@@ -6,7 +6,7 @@
 """
 
 from time import sleep as tsleep
-from multiprocessing import Event, Value
+from multiprocessing import Event
 #import inspect
 # multi IN_OUT module.
 
