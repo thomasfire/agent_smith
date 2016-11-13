@@ -55,7 +55,7 @@ def getname(user_id, vk):
 
 
 # marks messages as read via vk_api and id of last message
-def markasread(vk,msgid):
+def markasread(vk, msgid):
 	vk.messages.markAsRead(message_ids=msgid,start_message_id=msgid)
 
 
@@ -64,31 +64,31 @@ def markasread(vk,msgid):
 
 
 #finds attachments in message. Needs received message(one item from received list),
-# also needs file opened in append mode
+# also needs string to write
 # and ,of course, vk_api tools
-def findattachment(x,histmsg,vk):
+def findattachment(x, histmsg, vk):
 	#writing action
 	if 'action' in x.keys():
 		if x['action']=='chat_kick_user':
-			histmsg.write('Escaped this chat  ')
+			histmsg+=('Escaped this chat  ')
 
 		elif x['action']=='chat_invite_user':
-			histmsg.write('Joined this chat  ')
+			histmsg+=('Joined this chat  ')
 
 		elif x['action']=='chat_title_update':
-			histmsg.write('Title updated  ')
+			histmsg+=('Title updated  ')
 
 		elif x['action']=='chat_photo_remove':
-			histmsg.write('Chat photo removed  ')
+			histmsg+=('Chat photo removed  ')
 
 		elif x['action']=='chat_photo_update':
-			histmsg.write('Chat photo updated  ')
+			histmsg+=('Chat photo updated  ')
 
 		elif x['action']=='chat_create':
-			histmsg.write('Chat created  ')
+			histmsg+=('Chat created  ')
 
 		else:
-			histmsg.write('<UNKNOWN ACTION>')
+			histmsg+=('<UNKNOWN ACTION>')
 			warning(x)
 
 	#writing attachments
@@ -99,98 +99,108 @@ def findattachment(x,histmsg,vk):
 			# checking if it is photo. If it is photo,checking for max available size of this photo and writing its link
 			if y['type']=='photo':
 				if 'photo_1280' in y['photo'].keys():
-					histmsg.write(' photo '+y['photo']['photo_1280'] + '\n ')
+					histmsg+=(' photo '+y['photo']['photo_1280'] + '\n ')
 
 				elif 'photo_807' in y['photo'].keys():
-					histmsg.write(' photo '+y['photo']['photo_807'] + '\n ')
+					histmsg+=(' photo '+y['photo']['photo_807'] + '\n ')
 
 				elif 'photo_604' in y['photo'].keys():
-					histmsg.write(' photo '+y['photo']['photo_604'] + '\n ')
+					histmsg+=(' photo '+y['photo']['photo_604'] + '\n ')
 
 				elif 'photo_130' in y['photo'].keys():
-					histmsg.write(' photo '+y['photo']['photo_130'] + '\n ')
+					histmsg+=(' photo '+y['photo']['photo_130'] + '\n ')
 
 				elif 'photo_75' in y['photo'].keys():
-					histmsg.write(' photo '+y['photo']['photo_75'] + '\n ')
+					histmsg+=(' photo '+y['photo']['photo_75'] + '\n ')
 
 			# if current attachment is video, just writes its title. VK doesn`t give a link to the videos.
 			elif y['type']=='video':
-				histmsg.write(' video '+y['video']['title'] + '\n ')
+				histmsg+=(' video '+y['video']['title'] + '\n ')
 
 			# if current attachment is audio, write its artist, title and url.
 			# PS Yes, vk doesnt gives a link to the video but gives a link to the audio. VK is VK, i cant do anything
 			elif y['type']=='audio':
-				histmsg.write(' audio '+y['audio']['artist']+' - '+y['audio']['title'] +' ' +y['audio']['url']+ '\n ')
+				histmsg+=(' audio '+y['audio']['artist']+' - '+y['audio']['title'] +' ' +y['audio']['url']+ '\n ')
 
 			# if current attachment is document, write its title and url.
 			elif y['type']=='doc':
-				histmsg.write(' doc '+y['doc']['title'] +' '+ y['doc']['url']+ '\n ')
+				histmsg+=(' doc '+y['doc']['title'] +' '+ y['doc']['url']+ '\n ')
 
 			# if current attachment is link, write its title and url
 			elif y['type']=='link':
-				histmsg.write(' link '+y['link']['title'] +' '+ y['link']['url']+ '\n ')
+				histmsg+=(' link '+y['link']['title'] +' '+ y['link']['url']+ '\n ')
 
 			# if current attachment is post/repost write its text and name of club/user
 			elif y['type']=='wall':
-				histmsg.write(' wall '+getname(y['wall']['from_id'],vk)
+				histmsg+=(' wall '+getname(y['wall']['from_id'],vk)
 				+': '+y['wall']['text'].replace(';\n@', ':\n:')+'\n ')
 
 			# if current attachment is commentary write its text and name of club/user
 			elif y['type']=='wall_reply':
-				histmsg.write(' comment '+getname(y['wall_reply']['from_id'],vk)+
+				histmsg+=(' comment '+getname(y['wall_reply']['from_id'],vk)+
 				': '+y['wall_reply']['text'].replace(';\n@', ':\n:') +'\n ')
 
 			# if current attachment is sticker write its url
 			elif y['type']=='sticker':
 				#checking for max available size
 				if 'photo_512' in y['sticker'].keys():
-					histmsg.write(' sticker '+y['sticker']['photo_512'] + '\n ')
+					histmsg+=(' sticker '+y['sticker']['photo_512'] + '\n ')
 
 				elif 'photo_352' in y['sticker'].keys():
-					histmsg.write(' sticker '+y['sticker']['photo_352'] + '\n ')
+					histmsg+=(' sticker '+y['sticker']['photo_352'] + '\n ')
 
 				elif 'photo_256' in y['sticker'].keys():
-					histmsg.write(' sticker '+y['sticker']['photo_256'] + '\n ')
+					histmsg+=(' sticker '+y['sticker']['photo_256'] + '\n ')
 
 				elif 'photo_128' in y['sticker'].keys():
-					histmsg.write(' sticker '+y['sticker']['photo_128'] + '\n ')
+					histmsg+=(' sticker '+y['sticker']['photo_128'] + '\n ')
 
 				elif 'photo_64' in y['sticker'].keys():
-					histmsg.write(' sticker '+y['sticker']['photo_64'] + '\n ')
+					histmsg+=(' sticker '+y['sticker']['photo_64'] + '\n ')
 
 			# if current attachment is gift write url to its picture
 			elif y['type']=='gift':
 				# checking for max size of picture
 				if 'thumb_256' in y['gift'].keys():
-					histmsg.write(' gift '+y['gift']['thumb_256'] + '\n ')
+					histmsg+=(' gift '+y['gift']['thumb_256'] + '\n ')
 
 				elif 'thumb_96' in y['gift'].keys():
-					histmsg.write(' gift '+y['gift']['thumb_96'] + '\n ')
+					histmsg+=(' gift '+y['gift']['thumb_96'] + '\n ')
 
 				elif 'thumb_48' in y['gift'].keys():
-					histmsg.write(' gift '+y['gift']['thumb_48'] + '\n ')
+					histmsg+=(' gift '+y['gift']['thumb_48'] + '\n ')
 
 			# logging message about unknown type
 			else:
-				histmsg.write('<UNKNOWN TYPE>')
+				histmsg+=('<UNKNOWN TYPE>')
 				print(x)
 				warning(x)
 
 	# writing coordinates of geoposition if map is attached
 	if 'geo' in x.keys():
-		histmsg.write(' geo '+x['geo']['coordinates'] +' ')
+		histmsg+=(' geo '+x['geo']['coordinates'] +' ')
 
 	#writing forwarded messages
 	if 'fwd_messages' in x.keys():
 		# cycling through list of forwarded messages
 		for y in x['fwd_messages']:
 			# writing it
-			histmsg.write(" forwarded from "+getname(y['user_id'],vk)+" :: "+
+			histmsg+=(" forwarded from "+getname(y['user_id'],vk)+" :: "+
 			datetime.fromtimestamp(y['date']).strftime('%Y-%m-%d %H:%M:%S')+
 			" :: "+y['body'].replace(';\n@', ':\n:') + '\n ')
 			# find attachments in forwarded message. Forwarded are recursive now
-			findattachment(y,histmsg,vk)
+			histmsg=findattachment(y, histmsg, vk)
+	return histmsg
 
+
+
+
+
+
+# logs new messages
+def log_this(messages, iofile):
+	for x in messages:
+		iofile.write('a', '@ {} ;\n'.format(' :: '.join(x)))
 
 
 
@@ -198,27 +208,28 @@ def findattachment(x,histmsg,vk):
 
 # cleans from extra info and writes into the file. Returns id of last message
 # needs list of received messages, chat_id and vk_api
-def cleanup(msgs, chatid, vk, msghistory):
-	msglog=msghistory.read()
-
+def cleanup(msgs, chatid, vk, iofile):
 	# opening file in append mode
-	msghistory.wait_freedom_and_lock()
-	histmsg=open('files/msgshistory.db','a')
-
+	#msghistory.wait_freedom_and_lock()
+	#histmsg=open('files/msgshistory.db','a')
+	to_log = []
 	#writing the messages to the file
 	for x in reversed(msgs['items'][:99]):
 		#checking if it is needed message and security checking. Some people doesnt like such bots and they want to brake it
-		if 'chat_id' in x.keys() and x['chat_id']==chatid and '@ '+str(x['id'])+' ' not in msglog:
-			histmsg.write('@ '+str(x['id'])+' :: '+getname(x['user_id'],vk)+" :: "+
-			datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'].replace(';\n@', ':\n:'))
-			# find attachments and forwarded messages
-			findattachment(x,histmsg,vk)
-			# writing it
-			histmsg.write(' ;\n')
+		if 'chat_id' in x.keys() and x['chat_id']==chatid:
+			#histmsg.write('@ '+str(x['id'])+' :: '+getname(x['user_id'],vk)+" :: "+
+			#datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S')+' :: '+x['body'].replace(';\n@', ':\n:'))
+			histmsg = x['body'].replace(';\n@', ':\n:')
+			histmsg = findattachment(x, histmsg, vk)
+
+			to_log.append([str(x['id']), getname(x['user_id'],vk),
+			datetime.fromtimestamp(x['date']).strftime('%Y-%m-%d %H:%M:%S'), histmsg])
+
+			log_this(to_log, iofile)
 	# returning ID of last message
 
-	msghistory.unlock()
-	return msgs['items'][0]['id']
+	#msghistory.unlock()
+	return msgs['items'][0]['id'], to_log
 
 
 
@@ -234,18 +245,19 @@ def getmain(vk, chatidget, msghistory, userdic, lastid=0):
 		user_dict = userdic
 	# writing to the file and marking as read
 		if msgs['items']:
-			msgid=cleanup(msgs, chatidget, vk, msghistory)
+			msgid, messages = cleanup(msgs, chatidget, vk, msghistory)
+			print(messages)
 			if msgid:
 				try:
-					markasread(vk,msgid)
+					markasread(vk, msgid)
 				except:
 					exception('smth goes wrong at marking as read')
-				return msgid, user_dict # returning ID of last message
-		return lastid, user_dict
+				return msgid, user_dict, messages # returning ID of last message
+		return lastid, user_dict, []
 	except ConnectionResetError:
-		return lastid, user_dict
+		return lastid, user_dict, []
 	except Exception as e:
-		exception('smth goes wrong at getting messages: ')
+		exception('smth goes wrong at getting messages: ', e)
 
 
 
@@ -254,40 +266,3 @@ def getmain(vk, chatidget, msghistory, userdic, lastid=0):
 def captcha_handler(captcha):
 	key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
 	return captcha.try_again(key)
-
-
-
-
-
-
-if __name__ == '__main__':
-	from fcrypto import gethash,fdecrypt
-	from getpass import getpass
-	import re
-	#configuring logs
-	basicConfig(format = '%(levelname)-8s [%(asctime)s] %(message)s',
-	level = WARNING, filename = 'logs/getmsg.log')
-
-	#auth
-	# getting password to decrypt settings files
-	psswd=fcrypto.gethash(getpass(),mode='pass')
-
-	# loading settings
-	settings=fcrypto.fdecrypt("files/vk.settings",psswd)
-	login="".join(re.findall(r"login=(.+)#endlogin",settings))
-	password="".join(re.findall(r"password=(.+)#endpass",settings))
-	chatidget=int("".join(re.findall(r"chatid=(\d+)#endchatid",settings)))
-
-	# getting session
-	try:
-		vk_session = vk_api.VkApi(login, password,captcha_handler=captcha_handler)
-	except Exception as e:
-		exception('smth goes wrong at getting vk_session:')
-
-	#authorization
-	try:
-		vk_session.authorization()
-	except vk_api.AuthorizationError as error_msg:
-		exception(error_msg)
-# there some bugs,but if you use it only as module it is stable as a table
-	main(vk,chatidget)
