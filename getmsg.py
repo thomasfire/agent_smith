@@ -43,9 +43,12 @@ def getname(user_id, vk):
         return user_dict[str(user_id)]
     else:
         # getting name
-        name = vk.users.get(user_ids=user_id)
-        user_dict[str(user_id)] = " ".join([name[0]['first_name'], name[0]['last_name']])
-        write_user_dict()
+        try:
+            name = vk.users.get(user_ids=user_id)
+            user_dict[str(user_id)] = " ".join([name[0]['first_name'], name[0]['last_name']])
+            write_user_dict()
+        except Exception as ex:
+            exception(ex)
 
         return " ".join([name[0]['first_name'], name[0]['last_name']])
 
